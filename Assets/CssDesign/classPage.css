@@ -1,0 +1,110 @@
+:root {
+    --primary-gradient: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
+    --sidebar-width: 250px;
+    --google-blue: #1a73e8;
+}
+
+body {
+    background-color: #f8f9fa;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+.nav-link {
+    color: #495057;
+    padding: 0.8rem 1rem;
+    border-radius: 8px;
+    margin: 0 10px;
+}
+
+#content{
+    width: 80%;
+}
+
+/* Class Header */
+.class-header-gradient {
+    background: var(--primary-gradient);
+    border-radius: 15px;
+    color: white;
+    position: relative;
+    overflow: hidden;
+}
+
+.nav-tabs .nav-link {
+    border: none;
+    color: #6c757d;
+    padding: 1rem 1.5rem;
+}
+
+.nav-tabs .nav-link.active {
+    color: #4e73df !important;
+    border-bottom: 3px solid #4e73df !important;
+    background: none !important;
+    font-weight: 600;
+}
+
+/* Bottom Navigation Styling */
+.mobile-bottom-nav {
+    background: #fff;
+    border-top: 1px solid #dee2e6;
+    padding: 5px 0;
+    z-index: 1030;
+}
+
+.mobile-bottom-nav .nav-link {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 0.7rem;
+    color: #5f6368;
+    padding: 5px 0;
+    margin: 0;
+    border-radius: 0;
+    border: none !important;
+}
+
+.mobile-bottom-nav .nav-link i {
+    font-size: 1.3rem;
+    margin-bottom: 2px;
+}
+
+.mobile-bottom-nav .nav-link.active {
+    color: var(--google-blue) !important;
+    background: none !important;
+    font-weight: 600;
+}
+
+/* modal announcement */
+.circle-icon {
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #5f6368;
+    transition: background-color 0.2s;
+}
+
+.circle-icon:hover {
+    background-color: black;
+}
+
+/* Modal specific override to match the image shadow */
+.modal-content {
+    box-shadow: 0 12px 15px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19) !important;
+}
+
+/* Responsive Logic */
+@media (max-width: 768px) {
+    #content { width: 100%; }
+    
+    /* Add space at bottom so fixed nav doesn't cover content */
+    body {
+        padding-bottom: 70px;
+    }
+
+    /* Hide the desktop top tabs on mobile */
+    .desktop-tabs-container {
+        display: none !important;
+    }
+}

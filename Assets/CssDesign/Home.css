@@ -1,0 +1,313 @@
+body{
+    margin: 0px;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+/* ================= NAVBAR ================= */
+.NavBar{
+    padding: 10px 20px;
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 50px;
+    background-color: #F4F0E4;
+}
+
+.navbar-header{
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.navbar-header img{
+    width: 100px;
+}
+
+/* FIX: class mismatch risk (Top-actions vs Top-Actions) */
+/* Keeping both safe but standardizing usage */
+.Top-actions{
+    list-style-type: none;
+    display: flex;
+    width: 20%;
+    align-items: center;
+    justify-content: center;
+}
+
+.Top-Actions{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* ================= BUTTONS ================= */
+.Join-Btn-Container{
+    display: flex;
+    align-items: center;
+}
+
+.Join-Btn-Container button{ 
+    display: flex;
+    text-wrap: nowrap;
+    border: none;
+    background-color: #EC8F8D;
+    padding: 10px 15px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    border-radius: 10px;
+}
+
+.Avatar{
+    background-color: transparent;
+    border: none;
+}
+
+.inbox{
+    background-color: transparent;
+    border: none;
+    text-wrap: wrap;
+}
+
+/* ================= GRID ================= */
+.gridContainer{
+    display: grid;
+    grid-template-areas: "sidebar mainContent";
+    grid-template-columns: 1fr 4fr;
+    gap: 10px;
+    padding: 0px 5px;
+}
+
+/* ================= SIDEBAR ================= */
+.sidebar{
+    grid-area: sidebar;
+}
+
+.sidebar ul{
+    padding: 0;
+}
+
+.sidebar ul li{
+    list-style-type: none;
+    margin: 10px;
+    cursor: pointer;
+    border-radius: 5px;
+    padding: 10px;
+    background-color: #EC8F8D;
+}
+
+.sidebar-header{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.Add-Course{
+    border: none;
+    background-color: transparent;
+    font-size: 1.5rem;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+/* ================= MAIN CONTENT ================= */
+.mainContent{
+    border-radius: 10px;
+    grid-area: mainContent;
+    display: flex;
+    flex-wrap: wrap;
+    padding: 10px 20px;
+    justify-content: center;
+    background-color: #F4F0E4;
+    box-sizing: border-box;
+    width: 100%;
+    height: 610px;
+    overflow-y: auto;
+}
+
+/* ================= STATS ================= */
+.summary-stats{
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.stat-container{
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    width: 100%;
+    margin-bottom: 30px;
+}
+
+.stat-card{
+    flex: 1;
+    background-color: white;
+    max-width: 250px;
+    height: 250px;
+    border-radius: 10px;
+    padding: 10px 20px;
+    box-shadow: 0 4px 10px hsla(0, 0%, 20%, 0.4);
+    text-align: center;
+    transition: transform 0.2s;
+}
+
+.stat-card:hover{
+    transform: translateY(-3px);
+}
+
+.stat-card .stat-value{
+    font-size: 2.2rem;
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+/* ================= SCHEDULE ================= */
+.Schedule-Display{
+    width: 90%;
+    background-color: white;
+    border-radius: 10px;
+    padding: 5px 10px;
+    box-sizing: border-box;
+}
+
+.course-schedule{
+    background-color: hsla(202, 29%, 46%, 0.485);
+    border-radius: 5px;
+    padding: 5px 10px;
+    border-left: 4px solid hsl(202, 29%, 37%);
+    margin-bottom: 10px;
+}
+
+/* ================= FORM ================= */
+.code-form{
+    width: 80%;
+}
+
+.code-container{
+    position: relative;
+    width: 100%;
+}
+
+.code-container input{
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 1.3rem;
+    width: 100%;
+    text-align: center;
+    border: 1px solid #537D96;
+    box-shadow: 0 0 5px #537D96;
+}
+
+.code-container input:focus {
+    outline: none;
+}
+
+.code-label{
+    position: absolute;
+    top: -13px;
+    left: 10px;
+    font-weight: bold;
+    background-color: white;
+    padding: 0px 5px;
+    color: #537D96;
+}
+
+/* ================= MODAL ================= */
+.dark-modal {
+    background-color: #1A1C1E; 
+    color: #E3E2E6;
+    border: none;
+    border-radius: 12px;
+}
+
+.custom-modal-header {
+    border-bottom: none;
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.custom-modal-header .modal-title {
+    font-size: 1.4rem;
+    font-weight: 400;
+}
+
+.btn-create {
+    background-color: #373A3E; 
+    color: #8E9194;            
+    border-radius: 20px;
+    padding: 6px 20px;
+    font-weight: 500;
+    border: none;
+}
+
+.btn-create:not(.disabled) {
+    background-color: #A8C7FA; 
+    color: #062E6F;
+}
+
+/* ================= INPUT FLOATING ================= */
+.floating-input-container {
+    position: relative;
+    width: 100%;
+}
+
+.custom-input {
+    width: 100%;
+    background-color: transparent;
+    border: 1px solid #8E9194; 
+    border-radius: 4px;
+    padding: 18px 15px;
+    color: black;
+    font-size: 1rem;
+    box-sizing: border-box;
+    transition: all 0.2s ease-in-out;
+}
+
+.custom-input:focus {
+    outline: none;
+    border: 2px solid #A8C7FA; 
+    padding: 17px 14px; 
+}
+
+.floating-label {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: white; 
+    padding: 0 6px;
+    color: black;
+    font-size: 1rem;
+    pointer-events: none;
+    transition: 0.2s ease all;
+}
+
+.custom-input:focus ~ .floating-label,
+.custom-input:not(:placeholder-shown) ~ .floating-label {
+    top: 0;
+    font-size: 0.8rem;
+}
+
+.custom-input:focus ~ .floating-label {
+    color: #5b9aff;
+}
+
+/* ================= ⭐ FIX FOR FONT AWESOME ICONS (IMPORTANT CHANGE) ================= */
+/* FIX: ensures icons are visible inside dark modal and buttons */
+.fa-solid,
+.fa-regular,
+.fa-brands {
+    color: black; /* makes X icon and other icons visible */
+}
+
+/* FIX: prevents icons from inheriting weird button transparency issues */
+button i {
+    display: inline-block;
+    color: inherit;
+}
+
+/* OPTIONAL FIX: ensures hover visibility */
+button:hover i {
+    color: #A8C7FA;
+}

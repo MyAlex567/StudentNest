@@ -1,0 +1,11 @@
+{
+  "name": "dwcl/oop-midterm",
+  "description": "midterm exam",
+  "type": "project",
+  "autoload": {
+    "psr-4": {
+      "App\\": "src/"
+    }
+  },
+  "require": {}
+}

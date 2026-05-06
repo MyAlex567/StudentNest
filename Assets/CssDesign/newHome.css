@@ -1,0 +1,225 @@
+body { 
+    background-color: #f8f9fa; 
+    font-family: 'Inter', sans-serif; 
+    overflow-x: hidden; 
+}
+
+/* Sidebar Styling */
+#sidebar {
+    min-width: 250px;
+    max-width: 250px;
+    min-height: 100vh;
+    background: #fff;
+    border-right: 1px solid #dee2e6;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 1050;
+}
+
+/* Desktop Only: Mini Sidebar (Icons Only) */
+@media (min-width: 769px) {
+    #sidebar.mini {
+        min-width: 85px;
+        max-width: 85px;
+        text-align: center;
+    }
+    #sidebar.mini .nav-text, #sidebar.mini h4 { display: none; }
+    #sidebar.mini .nav-link { padding: 15px 0; }
+    #sidebar.mini i { margin: 0 !important; font-size: 1.4rem; }
+}
+
+/* Navigation Links */
+.nav-link { 
+    color: #6c757d; 
+    font-weight: 500; 
+    padding: 12px 20px; 
+    transition: 0.2s; 
+    white-space: nowrap; 
+    border-radius: 8px; 
+}
+.nav-link:hover, .nav-link.active { 
+    color: #000; 
+    background-color: #f1f3f5; 
+}
+
+/* Mobile Overlay */
+#sidebar-overlay {
+    display: none;
+    position: fixed;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 1040;
+    top: 0; 
+    left: 0;
+}
+
+/* Mobile Responsive Sidebar */
+@media (max-width: 768px) {
+    #sidebar { 
+        position: fixed; 
+        margin-left: -250px; /* Hidden by default on mobile */
+    }
+    #sidebar.active { 
+        margin-left: 0; /* Slide in on mobile */
+    }
+    #sidebar-overlay.show { 
+        display: block; 
+    }
+    /* Ensure labels are always visible on mobile when sidebar is active */
+    #sidebar .nav-text {
+        display: inline !important;
+    }
+}
+
+/* UI Elements */
+.hamburger-btn { 
+    background: #fff; 
+    border: 1px solid #dee2e6; 
+    border-radius: 8px; 
+    padding: 5px 12px; 
+    cursor: pointer; 
+}
+.card { 
+    border: none; 
+    border-radius: 12px; 
+    box-shadow: 0 2px 10px rgba(0,0,0,0.02); 
+}
+.progress { 
+    height: 8px; 
+    border-radius: 10px; 
+}
+.stat-icon { 
+    font-size: 1.5rem; 
+    color: #adb5bd; 
+}
+
+.message_error{
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.message.error{
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.message.success {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.checking {
+    color: #FF9800;
+}
+
+/* ================= INPUT FLOATING ================= */
+.floating-input-container {
+    position: relative;
+    width: 100%;
+}
+
+.custom-input {
+    width: 100%;
+    background-color: transparent;
+    border: 1px solid #8E9194; 
+    border-radius: 4px;
+    padding: 18px 15px;
+    color: black;
+    font-size: 1rem;
+    box-sizing: border-box;
+    transition: all 0.2s ease-in-out;
+}
+
+.custom-input:focus {
+    outline: none;
+    border: 2px solid #A8C7FA; 
+    padding: 17px 14px; 
+}
+
+.floating-label {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: white; 
+    padding: 0 6px;
+    color: black;
+    font-size: 1rem;
+    pointer-events: none;
+    transition: 0.2s ease all;
+}
+
+.custom-input:focus ~ .floating-label,
+.custom-input:not(:placeholder-shown) ~ .floating-label {
+    top: 0;
+    font-size: 0.8rem;
+}
+
+.custom-input:focus ~ .floating-label {
+    color: #5b9aff;
+}
+
+/* ================= ⭐ FIX FOR FONT AWESOME ICONS (IMPORTANT CHANGE) ================= */
+/* FIX: ensures icons are visible inside dark modal and buttons */
+.fa-solid,
+.fa-regular,
+.fa-brands {
+    color: black; /* makes X icon and other icons visible */
+}
+
+/* FIX: prevents icons from inheriting weird button transparency issues */
+button i {
+    display: inline-block;
+    color: inherit;
+}
+
+/* OPTIONAL FIX: ensures hover visibility */
+button:hover i {
+    color: #A8C7FA;
+}
+
+.class-card {
+    width: 18rem;
+    border-radius: 14px;
+    overflow: hidden;
+    transition: 0.25s ease;
+    background: #fff;
+}
+
+.class-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 28px rgba(0,0,0,0.15);
+}
+
+.class-img {
+    height: 120px;
+    object-fit: cover;
+    background: #f1f3f5;
+}
+
+/* Desktop only */
+@media (min-width: 768px) {
+    #sidebar{
+        position: sticky;
+        top: 0;
+        height: 100vh;
+        align-self: flex-start;
+    }
+}
+
+/* Mobile */
+@media (max-width: 767px) {
+    #sidebar{
+        position: fixed;   /* or whatever your mobile slide menu uses */
+        top: 0;
+        left: -260px; /* example hidden */
+        height: 100%;
+    }
+
+    #sidebar.active{
+        left: 0;
+    }
+}

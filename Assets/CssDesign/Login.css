@@ -1,0 +1,76 @@
+body{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 5%;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background-color: hsl(0, 0%, 96%);
+    height: 100vh;
+}
+
+/* Login Css Design */
+.Login_form_container{
+    border: 1px solid;
+    width: 30%;
+    height: 600px;
+    padding: 20px;
+    background-color: white;
+    border-radius: 10px;
+    border: none;
+    box-shadow: 0 0 5px 5px hsla(0, 0%, 53%, 0.3);
+}
+
+.login_title{
+    color: hsla(0, 0%, 29%, 0.586);
+    font-weight: 600;
+}
+
+.user_info{
+    width: 100%;
+    margin-top: 20px;
+}
+
+.user_info label{
+    font-size: 1.2rem;
+}
+
+.user_info input{
+    width: 100%;
+    padding: 10px;
+    font-size: 1.2rem;
+    border-radius: 5px;
+    box-sizing: border-box;
+    border: none;
+    background-color: hsla(0, 0%, 75%, 0.348);
+}
+
+.user_info input:focus{
+    outline: none;
+}
+
+.login_button_container{
+    width: 100%;
+    margin-top: 20px;
+}
+
+.login_button_container button{
+    width: 100%;
+    font-size: 1.2rem;
+    padding: 5px;
+    border-radius: 5px;
+    background-color: hsl(207, 100%, 67%);
+    border: none;
+    font-weight: bold;
+}
+
+.message {
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 5px;
+}
+
+.message.error {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
