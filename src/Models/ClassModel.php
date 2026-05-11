@@ -1,16 +1,99 @@
 <?php
 namespace App\Models;
 
+use App\Helpers\Database;
+
 class ClassModel{
     private $conn;
 
     // Store database connection when model is created
-    public function __construct($database){
+    public function __construct(Database $database){
         $this->conn = $database->getConnection();
     }
 
-    public function storePost($postInfo){
-        
+    public function storeMaterial($postID){
+        $sql = "INSERT INTO material(post_id) VALUES (:post_id)";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->execute([
+            'post_id' => $postID
+        ]);
+
+        return $this->conn->lastInsertId();
+    }
+
+    public function storePost($postInfo, $filePaths){
+        try{
+            $this->conn->beginTransaction();
+
+            // get class id
+            $sql = "SELECT class_id FROM class WHERE class_code = :class_code";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute([
+                'class_code' => $postInfo['class_code']
+            ]);
+            $classId = $stmt->fetch(\PDO::FETCH_ASSOC);
+
+            // get created by references
+            $sql2 = "SELECT account_id FROM account WHERE username = :username";
+            $stmt2 = $this->conn->prepare($sql2);
+            $stmt2->execute([
+                'username' => $postInfo['username']
+            ]);
+            $createdby = $stmt2->fetch(\PDO::FETCH_ASSOC);
+
+            // Insert into post
+            $sql = "INSERT INTO post(class_id, created_by, post_type, title, description)
+                    VALUES (:class_id, :created_by, :post_type, :title, :description)";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute([
+                'class_id' => $classId['class_id'],
+                'created_by' => $createdby['account_id'],
+                'post_type' => $postInfo['post_type'],
+                'title' => $postInfo['post_title'],
+                'description' => $postInfo['post_description']
+            ]);
+
+            // get the last inserted id which is the post
+            $lastinsertedId = $this->conn->lastInsertId();
+
+            $this->storeMaterial($lastinsertedId);
+
+            // Loop for insertion in data base
+            foreach($filePaths['path'] as $file){
+
+                $sql3 = "INSERT INTO attachment(post_id, file_path, file_name)
+                        VALUES (:post_id, :file_path, :file_name)";
+                $stmt3 = $this->conn->prepare($sql3);
+                $stmt3->execute([
+                    "post_id" => $lastinsertedId,
+                    'file_path' => $file['file_path'],
+                    'file_name' => $file['file_name'],
+                ]);
+            }   
+
+            $this->conn->commit();
+
+        }catch(\PDOException $error){
+            echo $error->getMessage();
+            $this->conn->rollBack();
+        }
+
+    }
+
+    // get the role of the current user in class
+    public function getClassRole($username, $classCode){
+        $sql = "SELECT cu.role FROM class_user cu
+                JOIN account a ON a.account_id = cu.account_id
+                JOIN class c ON c.class_id = cu.class_id
+                WHERE a.username = :username AND c.class_code = :class_code";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->execute([
+            'username' => $username,
+            'class_code' => $classCode 
+        ]);
+
+        return $stmt->fetch(\PDO::FETCH_ASSOC);
+
     }
 
     public function selectAllClass($classCode){

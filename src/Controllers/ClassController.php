@@ -4,12 +4,13 @@ namespace App\Controllers;
 use App\Helpers\Sanitizer;
 use App\Helpers\Validator;
 use App\Helpers\FileStorageHelper;
+use App\Models\ClassModel;
 
 class ClassController{
     private $model;
     private $storage;
 
-    public function __construct($model){
+    public function __construct(ClassModel $model){
         $this->model = $model;
         $this->storage = new FileStorageHelper();
     }
@@ -181,8 +182,21 @@ class ClassController{
     public function createPost($postInfo){
         Validator::clearErrors();
 
+        if(!Validator::validateClassCode($postInfo['class_code'])){
+            return [
+                'success' => false,
+                'message' => Validator::getErrors()
+            ];
+        }
+
+        if(!Validator::validateUsername($postInfo['username'])){
+            return[
+                'success' => false,
+                'message' => Validator::getErrors()            
+            ];
+        }
+
         if(!Validator::validatePostType($postInfo['post_type'])){
-            echo'1';
             return [
                 'success' => false,
                 'message' => Validator::getErrors()
@@ -190,7 +204,6 @@ class ClassController{
         }
 
         if(!Validator::validateTitle($postInfo['post_title'])){
-            echo '2';
             return [
                 'success' => false,
                 'message' => Validator::getErrors()
@@ -198,16 +211,25 @@ class ClassController{
         }
 
         if(!Validator::validateDescription($postInfo['post_description'])){
-            echo '3';
             return [
                 'success' => false,
                 'message' => Validator::getErrors()
             ];
         }
 
+        $postInfo['username'] = Sanitizer::sanitizeUsername($postInfo['username']);
+        $postInfo['class_code'] = Sanitizer::sanitizeClassCode($postInfo['class_code']);
+
         $folderUpload = $this->storage->store($_SESSION['userData']['username'], $postInfo['post_type'], $postInfo['file']);
 
-        var_dump($folderUpload);
+        $insertPost = $this->model->storePost($postInfo, $folderUpload);
+
+        // var_dump($folderUpload['path'][1]);
+
+        return[
+            'success' => true,
+            'uploadResult' => $folderUpload
+        ];
         
     }
 }

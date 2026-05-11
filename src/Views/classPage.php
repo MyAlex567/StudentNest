@@ -14,9 +14,6 @@ $classModel = new ClassModel($database);
 $ClassController = new ClassController($classModel);
 
 
-
-$classCode = $_GET['class_code'] ?? '';
-$classData = $ClassController->getClassData($classCode);
 $classCode = $_GET['class_code'] ?? '';
 $classResult = $ClassController->getClassData($classCode);
 
@@ -54,6 +51,8 @@ if(isset($_POST['post']) && $_SERVER['REQUEST_METHOD'] === 'POST'){
         case 'post_activity':
 
             $postData = [
+                'username' => $_SESSION['userData']['username'],
+                'class_code' => $classCode,
                 'post_type' => $_POST['post_type'] ?? '',
                 'file' => $_FILES['file'] ?? '',
                 'post_title' => $_POST['post_title'] ?? '',
@@ -62,14 +61,31 @@ if(isset($_POST['post']) && $_SERVER['REQUEST_METHOD'] === 'POST'){
 
             $result = $ClassController->createPost($postData);
 
+            if(!$result['success']){
+                $_SESSION['toast'] = [
+                    'type' => 'error',
+                    'message' => 'failed to upload'
+                ];
+            }else{
+                $_SESSION['toast'] = [
+                    'type' => 'success',
+                    'message' => 'Upload Success'
+                ];
+            }
             break;
 
         case 'announcement':
             break;
             
         default:
-            echo "haha";
+            $_SESSION['toast'] = [
+                'type' => 'error',
+                'message' => 'failed to upload'
+            ];
     }
+
+    header('Location: ' . $_SERVER['PHP_SELF'] . "?class_code={$classCode}");
+    exit();
 }
 
 ?>
@@ -173,6 +189,18 @@ if(isset($_POST['post']) && $_SERVER['REQUEST_METHOD'] === 'POST'){
                                         </div>
                                     </div>
                                 </div>
+
+                                <!-- Class Code here -->
+                                <div class="card border-0 shadow-sm p-3 mb-4">
+                                    <h6 class="fw-bold mb-3">Class Code</h6>
+                                    <div class="d-flex align-items-start justify-content-center gap-2 mb-2">
+                                        <div>
+                                            <h1 class="text-align-center classCode"><?php echo $classCode ?></h1>
+                                        </div>
+                                    </div>
+                                </div>     
+                                
+                                
                             </div>
                         </div>
                     </div>
@@ -328,6 +356,26 @@ if(isset($_POST['post']) && $_SERVER['REQUEST_METHOD'] === 'POST'){
         });
     });
 </script>
+
+    <?php if (isset($_SESSION['toast'])): ?>
+        <div class="position-fixed start-50 translate-middle-x" style="top: 30%; z-index: 11;">
+            <div id="myToast" class="toast message <?php echo $_SESSION['toast']['type']; ?> border-0">
+            <div class="toast-body text-center fw-bold">
+                <?php echo $_SESSION['toast']['message']; ?>
+            </div>
+            </div>
+        </div>
+
+        <script>
+            const toast = new bootstrap.Toast(document.getElementById('myToast'), {
+                delay: 3000
+            });
+            toast.show();
+        </script>
+
+    <?php unset($_SESSION['toast']); ?>
+    <?php endif; ?>
+
 <script src="../../Assets/JavaScript/classPage.js"></script>
 </body>
 </html>

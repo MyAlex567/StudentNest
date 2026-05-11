@@ -53,7 +53,10 @@ class FileStorageHelper{
                 if(move_uploaded_file($fileTmpName, $targetPath)) {
                     $uploadSuccessCount++;
                     $uploadMessages[] = ['type' => 'success', 'msg' => "✓ {$fileName} uploaded successfully"];
-                    $paths[] = $targetPath;
+                    $paths[] = [
+                        'file_path' => $targetPath,
+                        'file_name' => $fileName
+                    ];
                 }else{
                     $uploadFailCount++;
                     $uploadMessages[] = ['type' => 'error', 'msg' => "✗ Failed to upload {$fileName}"];
@@ -65,7 +68,12 @@ class FileStorageHelper{
             }
         }
 
-        return $paths;
+        return [
+            'path' => $paths,
+            'uploadSuccessCount' => $uploadSuccessCount,
+            'uploadFailCount' => $uploadFailCount,
+            'uploadMessage' => $uploadMessages
+        ];
 
     }
 }
