@@ -93,7 +93,7 @@ if(isset($_SESSION['errors'])){
 
         </form>
 
-        <p>Don't Have an account? <a style="color: hsl(207, 100%, 54%)" href="sign_up.php" >Sign Up</a></p>
+        <p>Don't Have an account? <a style="color: hsl(207, 100%, 54%)" href="sign_up.php">Sign Up</a></p>
     </div>
 
 

@@ -3,6 +3,37 @@ namespace App\Helpers;
 
 class FileStorageHelper{
 
+    public function deleteFile($filePath){
+    
+        try{
+            $filesFailedToDelete = [];
+            $missingFiles = [];
+            $successCount = 0;
+
+            foreach($filePath as $path){
+
+                if (!file_exists($path['file_path'])) {
+                    $missingFiles[] = basename($path['file_path']);
+                    continue;
+                }
+
+                if (unlink($path['file_path'])) {
+                    $successCount++;
+                } else {
+                    $filesFailedToDelete[] = basename($path['file_path']);
+                }
+            }
+
+            return [
+                'successCount' => $successCount,
+                'filesFailedToDelete' => $filesFailedToDelete
+            ];
+        }catch(\Throwable $error){
+            return $error->getMessage();
+        }
+
+    }
+
     public function store($username, $postType, $fileUpload){
         // No chmod operations - works on restricted servers
         $uploadDir = "../../Assets/documents/{$username}/{$postType}";

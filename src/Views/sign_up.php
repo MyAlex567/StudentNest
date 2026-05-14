@@ -116,6 +116,7 @@ if (isset($_SESSION['success'])) {
                 <div class="Next_button_container">
                     <label for="toggle_parts">Next<i class="fa-solid fa-arrow-right"></i></label>
                 </div>
+                <a href="javascript:history.back()">Log in</a>
             </div>
 
             <div class="second_part">

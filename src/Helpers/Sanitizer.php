@@ -3,6 +3,10 @@ namespace App\Helpers;
 
 class Sanitizer{
 
+    public static function sanitizePostId($id) {
+        return trim((string) $id);
+    }
+
     public static function sanitizeUsername($username){
         if ($username === null) return '';
 

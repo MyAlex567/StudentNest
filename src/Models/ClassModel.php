@@ -285,6 +285,51 @@ class ClassModel{
         return $stmt->fetchAll(\PDO::FETCH_ASSOC);
     }
 
+    public function deletePost($postID){
+        try{
+
+            $sql = "DELETE FROM post WHERE post_id = :post_id";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute([
+                'post_id' => $postID
+            ]);
+
+            // check if anything was deleted
+            if ($stmt->rowCount() > 0) {
+                return [
+                    'success' => true,
+                    'message' => 'Post deleted successfully!'
+                ];
+            }
+
+            return [
+                'success' => false,
+                'message' => 'Post not found'
+            ];
+
+        }catch(\PDOException $error){
+            return [
+                'success' => false,
+                'message' => 'Database error',
+                'error' => $error->getMessage()
+            ];
+        }
+    }
+
+    public function getFilePaths($postID){
+        try{
+            $sql = "SELECT file_path FROM attachment WHERE post_id = :post_id";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute([
+                'post_id' => $postID
+            ]);
+
+            return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        }catch(\PDOException $error){
+            return false;
+        }
+    }
+
     public function getClassData($classCode){
         $sql = "SELECT created_by, class_name, subject, room, section, class_code, created_at FROM class WHERE class_code = :class_code";
         $stmt = $this->conn->prepare($sql);

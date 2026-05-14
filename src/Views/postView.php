@@ -6,6 +6,29 @@ ini_set('display_startup_errors', '1');
 require_once __DIR__ . '../../../vendor/autoload.php';    
 
 $_SESSION['post_id'] = $_GET['post_id'];
+$documents = $_SESSION['class_post_data'][$_GET['post_id']] ?? '';
+
+if (empty($documents)) {
+    ?>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+        <div class="class-header-gradient p-5 mb-4 shadow-sm">
+            <div class="position-relative" style="z-index: 2;">
+                <h1 class="display-5 fw-bold mb-1">Post Not Found</h1>
+                <p class="lead mb-0">
+                    The Post you’re looking for doesn’t exist or the post code is invalid.
+                </p>
+                <a href="../../index.php" class="btn btn-primary px-4">
+                    <i class="bi bi-house-door me-1"></i> Go Back Home
+                </a>
+                <a href="javascript:history.back()" class="btn btn-outline-secondary px-4 ms-2">
+                    Back
+                </a>
+            </div>
+            <i class="bi bi-code-slash position-absolute" style="right: 20px; bottom: -20px; font-size: 120px; opacity: 0.1;"></i>
+        </div>
+    <?php
+    exit;
+}
 
 ?>
 <!DOCTYPE html>
@@ -31,8 +54,6 @@ $_SESSION['post_id'] = $_GET['post_id'];
             </div>
         </div>
     </header>
-
-    <?php $documents = $_SESSION['class_post_data'][$_GET['post_id']] ?>
 
     <div class="documentContainer">
         <div class="document-grid">

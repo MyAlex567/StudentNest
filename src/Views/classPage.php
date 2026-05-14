@@ -17,12 +17,12 @@ $ClassController = new ClassController($classModel);
 $classCode = $_GET['class_code'] ?? '';
 $_SESSION['class_id'] = $classCode;
 $classResult = $ClassController->getClassData($classCode);
-$classData = $classResult['data'];
+$classData = $classResult['data'] ?? '';
 $classMembers = $ClassController->selectAllClass($classCode);
 $classRole = '';
 $classPost = [];
 
-if (!$classResult['success']) {
+if (!$classResult['success'] && empty($_SESSION['userData'])) {
     ?>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
         <div class="class-header-gradient p-5 mb-4 shadow-sm">
@@ -44,14 +44,27 @@ if (!$classResult['success']) {
     exit;
 }
 
+// Handle posting
+
+if(isset($_POST['post_activity']) && $_SERVER['REQUEST_METHOD'] === "POST"){
+    $postData = [
+        'username' => $_SESSION['userData']['username'],
+        'class_code' => $classCode,
+        'post_type' => $_POST['post_type'] ?? '',
+        'file' => $_FILES['file'] ?? '',
+        'due_date' => $_POST['due_date'],
+        'post_title' => $_POST['post_title'] ?? '',
+        'post_description' => $_POST['post_description'] ?? ''
+    ];
+
+    var_dump($postData);
+}
 
 if(isset($_POST['post']) && $_SERVER['REQUEST_METHOD'] === 'POST'){
     $postType = $_POST['post_type'] ?? '';
 
     switch($postType){
         case 'post_material':
-        case 'post_activity':
-
             $postData = [
                 'username' => $_SESSION['userData']['username'],
                 'class_code' => $classCode,
@@ -200,26 +213,52 @@ try{
                                         ?>
 
                                         <div class="card border-0 shadow-sm mb-3">
-                                            <div class="card-body p-4">
+                                            <div class="card-body p-4 position-relative">
+
+                                                <div class="dropdown position-absolute top-0 end-0 m-3">
+                                                    <form action="<?php echo $_SERVER['PHP_SELF'] . '?class_code=' . $classCode ?>" method="POST">
+
+                                                        <button class="btn btn-link text-dark p-0" type="button" data-bs-toggle="dropdown">
+                                                            <i class="bi bi-three-dots-vertical fs-5"></i>
+                                                        </button>
+
+                                                        <ul class="dropdown-menu dropdown-menu-end">
+                                                            <li>
+                                                                <a class="dropdown-item text-danger"
+                                                                href="#"
+                                                                data-bs-toggle="modal"
+                                                                data-bs-target="#deletePostModal<?php echo $post['post_id']; ?>">
+                                                                    Delete
+                                                                </a>
+                                                            </li>
+                                                        </ul>
+                                                    </form>
+                                                </div>
+
+                                                <!-- YOUR ORIGINAL CODE (UNCHANGED) -->
                                                 <div class="d-flex align-items-center gap-3 mb-3">
                                                     <img src="https://ui-avatars.com/api/?name=<?php echo $post['author'] ?>&background=0d6efd&color=fff" class="rounded-circle" width="45">
                                                     <div>
                                                         <h6 class="mb-0 fw-bold"><?php echo $post['author'] ?></h6>
                                                         <small class="text-muted">Posted <?php 
-                                                           echo (floor((strtotime($post['post_date']) - time()) / 86400) * -1) == 0 ? 'today' : (floor((strtotime($post['post_date']) - time()) / 86400) * -1) . " days ago";
+                                                        echo (floor((strtotime($post['post_date']) - time()) / 86400) * -1) == 0 
+                                                                ? 'today' 
+                                                                : (floor((strtotime($post['post_date']) - time()) / 86400) * -1) . " days ago";
                                                         ?></small>
                                                     </div>
                                                 </div>
 
                                                 <span class="badge bg-info"><?php echo $post['post_type'] ?></span>
 
-                                                <a href="../Views/postView.php?post_id=<?php echo $post['post_id'] ?>" class="link-dark"><?php echo $post['title'] ?></a>
+                                                <a href="../Views/postView.php?post_id=<?php echo $post['post_id'] ?>" class="link-dark">
+                                                    <?php echo $post['title'] ?>
+                                                </a>
 
                                                 <p class="card-text"><?php echo $post['description'] ?></p>
 
                                             </div>
 
-                                            <?php $files = explode('[[FILE_SEPARATOR]]', $post['file_paths']) ?>
+                                            <?php $files = $post['file_paths'] ? explode('[[FILE_SEPARATOR]]', $post['file_paths']) : []?>
                                                 
                                                 <?php if (count($files) > 0): ?>
                                                     <?php $file_order = 1; ?>
@@ -271,19 +310,45 @@ try{
                                                                 'previewContent' => $previewContent
                                                             ];
                                                         }
+                                                
                                                         $file_order++;
                                                     ?>
                                                     <?php endforeach; ?>
                                                     <?php $_SESSION['class_post_data'] = $class_post_details?>
-                                                <?php else: ?>
-                                                    <div class="empty-state" style="text-align: center; padding: 60px; background: white; border-radius: 12px;">
-                                                        <div style="font-size: 64px;">📭</div>
-                                                        <h3>No documents yet</h3>
-                                                        <p>Upload files or use FTP to add documents</p>
-                                                    </div>
                                                 <?php endif; ?>
                                         </div>
                                         
+
+                                        <!-- DELET NOTIFICATION -->
+                                        <div class="modal fade" id="deletePostModal<?php echo $post['post_id']; ?>" tabindex="-1">
+                                            <div class="modal-dialog modal-dialog-centered">
+                                                <div class="modal-content">
+
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title">Delete Post</h5>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                    </div>
+
+                                                    <div class="modal-body">
+                                                        Are you sure you want to delete this post?
+                                                    </div>
+
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                                            Cancel
+                                                        </button>
+
+                                                        <button type="button" class="btn btn-danger delete_post" data-bs-dismiss="modal"
+                                                                data-post-id="<?php echo $post['post_id']; ?>"
+                                                                data-class-code="<?php echo $classCode; ?>">
+                                                            Danger
+                                                        </button>
+                                                    </div>
+
+                                                </div>
+                                            </div>
+                                        </div>
+
                                     <?php endforeach; ?>
                                 <?php endif; ?>
                                 
@@ -319,6 +384,20 @@ try{
 
                     <!-- Classwork Tab Placeholder -->
                     <div class="tab-pane fade" id="classwork" role="tabpanel">
+                        <div class="col-lg-9">
+
+                            <?php if($classRole === "teacher"): ?>
+                                <div class="card border-0 shadow-sm mb-4 p-3 d-flex flex-row align-items-center gap-3">
+                                    <img src="https://ui-avatars.com/api/?name=<?php echo $_SESSION['userData']['username'] ?>&background=random" class="rounded-circle" width="40">
+                                    <button type="button" class="bg-light p-2 rounded-pill px-3 text-muted border"
+                                            style="cursor: pointer;"
+                                            data-bs-toggle="modal" data-bs-target="#activityModal">
+                                            post activity
+                                    </button>
+                                </div>
+                            <?php endif ?>
+                        </div>
+
                         <div class="card border-0 shadow-sm p-5 text-center">
                             <i class="bi bi-journal-text display-1 text-muted mb-3"></i>
                             <h4>Classwork Content</h4>
@@ -363,6 +442,8 @@ try{
         </div>
     </div>
 
+
+
     <!-- This is where you posting shit -->
     <div class="modal fade" id="announcementModal" tabindex="-1" aria-labelledby="announcementModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-centered">
@@ -379,7 +460,6 @@ try{
                                     id="post_type"
                                     name="post_type">
                                 <option selected value="post_announcement">Announcement</option>
-                                <option value="post_activity">Activity</option>
                                 <option value="post_material">Material</option>
                             </select>
                         </div>

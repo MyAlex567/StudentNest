@@ -255,17 +255,59 @@ class ClassController{
         $postInfo['username'] = Sanitizer::sanitizeUsername($postInfo['username']);
         $postInfo['class_code'] = Sanitizer::sanitizeClassCode($postInfo['class_code']);
 
-        $folderUpload = $this->storage->store($_SESSION['userData']['username'], $postInfo['post_type'], $postInfo['file']);
+        $folderUpload = [];
 
-        $insertPost = $this->model->storePost($postInfo, $folderUpload);
-
-        // var_dump($folderUpload['path'][1]);
+        if(!empty($postInfo['file'])){
+           $folderUpload = $this->storage->store($_SESSION['userData']['username'], $postInfo['post_type'], $postInfo['file']);
+        }
+        $this->model->storePost($postInfo, $folderUpload); 
 
         return[
             'success' => true,
             'uploadResult' => $folderUpload
         ];
         
+    }
+
+    public function deletePost($postId){
+        Validator::clearErrors();
+
+        if(!Validator::validatePostId($postId)){
+            return [
+                'success' => false,
+                'message' => Validator::getErrors()
+            ];
+        }
+
+        $sanitized = Sanitizer::sanitizePostId($postId);
+        $result = [];
+        $deleteFile = [];
+
+        // Deleting file in folder
+        $paths = $this->model->getFilePaths($sanitized);
+        if($paths){
+
+            $deleteFile = $this->storage->deleteFile($paths);
+
+            if($deleteFile['successCount'] > 0){
+                $result = $this->model->deletePost($sanitized);
+            }
+
+        }
+
+        // Deleting data in database
+        if($result['success']){
+            return [
+                'success' => true,
+                'message' => $result['message'] ?? 'Post deleted successfully!',
+                'deletedFile' => $deleteFile
+            ];
+        }
+
+        return [
+            'success' => false,
+            'message' => $result['message'] ?? 'Failed to delete post'
+        ];
     }
 
     public function getPost($classCode){

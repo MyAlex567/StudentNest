@@ -5,6 +5,26 @@ class Validator{
     private static $errors = [];
 
     /**
+     * Validate Post Id
+     */
+    public static function validatePostId($id) {
+
+        if ($id === '' || !ctype_digit($id)) {
+            self::$errors[] = "Invalid ID format.";
+            return false;
+        }
+
+        $id = (int) $id;
+
+        if ($id <= 0) {
+            self::$errors[] = "ID must be a positive number.";
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
      * Validate description
      */
     public static function validateDescription($description){

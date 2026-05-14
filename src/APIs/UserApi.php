@@ -60,6 +60,9 @@ class UserApi{
             case 'getUser-info':
                 $this->getUserInfo();
                 break;
+            case 'delete-post':
+                $this->deletePost();
+                break;
             default:
                 http_response_code(404);
                 echo json_encode(['error' => 'Action not found']);
@@ -157,7 +160,27 @@ class UserApi{
         ]);
 
     }
+    
+    private function deletePost(){
+        $input = json_decode(file_get_contents('php://input'), true); 
+        $post_id = $input['postId'] ?? '';
 
+        $isSuccessDeleting = $this->classController->deletePost($post_id);
+
+        if(!$isSuccessDeleting['success']){
+            echo json_encode([
+                'available' => false,
+                'valid' => false,
+                'errors' => $isSuccessDeleting['message']
+            ]);
+            return;
+        }
+
+        echo json_encode([
+            'success' => $isSuccessDeleting['success'],
+            'message' => $isSuccessDeleting['message']
+        ]);
+    }
 
 }
 

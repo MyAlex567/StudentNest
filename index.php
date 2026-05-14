@@ -19,7 +19,27 @@ $ClassController = new ClassController($classModel);
 
 $userData = $_SESSION['userData'] ?? '';
 
-
+if (empty($_SESSION['userData'])) {
+    ?>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+        <div class="class-header-gradient p-5 mb-4 shadow-sm">
+            <div class="position-relative" style="z-index: 2;">
+                <h1 class="display-5 fw-bold mb-1">unauthorized Login</h1>
+                <p class="lead mb-0">
+                    The page you’re looking for doesn’t exist or the login is invalid.
+                </p>
+                <a href="../../index.php" class="btn btn-primary px-4">
+                    <i class="bi bi-house-door me-1"></i> Go Back Home
+                </a>
+                <a href="javascript:history.back()" class="btn btn-outline-secondary px-4 ms-2">
+                    Back
+                </a>
+            </div>
+            <i class="bi bi-code-slash position-absolute" style="right: 20px; bottom: -20px; font-size: 120px; opacity: 0.1;"></i>
+        </div>
+    <?php
+    exit;
+}
 
 // For creating class
 if(isset($_POST['Create_class']) && $_SERVER['REQUEST_METHOD'] === "POST"){
@@ -120,19 +140,11 @@ if(isset($_POST['logout']) && $_SERVER['REQUEST_METHOD'] === 'POST'){
     <nav id="sidebar" class="p-3 d-block position-md-sticky top-md-0 vh-md-100">
         <div class="px-2 mb-4">
             <h4 class="fw-bold mb-0">StudentNest</h4>
-            <?php 
-                // $bites = bin2hex(random_bytes(3));
-                // echo strtoupper(substr($bites, 0, 6));
-                // echo "<br>". $bites;
-                // var_dump($_SESSION['userData']);
-            ?>
         </div>
         <ul class="nav flex-column gap-2">
             <li class="nav-item"><a class="nav-link active" href="#"><i class="bi bi-grid-fill me-2"></i> <span class="nav-text">Dashboard</span></a></li>
             <li class="nav-item" id="class_toggle"><a class="nav-link" href="#"><i class="bi bi-book me-2"></i> <span class="nav-text">My Class</span></a></li>
-            <li class="nav-item"><a class="nav-link" href="#"><i class="bi bi-bar-chart me-2"></i> <span class="nav-text">Progress</span></a></li>
             <li class="nav-item"><a class="nav-link" href="#"><i class="bi bi-file-earmark-text me-2"></i> <span class="nav-text">Assignments</span></a></li>
-            <li class="nav-item"><a class="nav-link" href="#"><i class="bi bi-patch-check me-2"></i> <span class="nav-text">Certificates</span></a></li>
             <li class="nav-item" id="settings_toggle"><a class="nav-link" href="#"><i class="bi bi-gear me-2"></i> <span class="nav-text">Settings</span></a></li>
         </ul>
     </nav>
@@ -167,7 +179,7 @@ if(isset($_POST['logout']) && $_SERVER['REQUEST_METHOD'] === 'POST'){
                 <i class="bi bi-bell text-muted fs-5"></i>
                 <div class="dropdown dropstart">
 
-                    <img src="https://ui-avatars.com/api/?name=User&background=random"
+                    <img src="https://ui-avatars.com/api/?name=<?php echo $_SESSION['userData']['username'] ?>&background=random"
                         class="rounded-circle"
                         width="35"
                         role="button"

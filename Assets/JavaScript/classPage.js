@@ -42,8 +42,6 @@ document.addEventListener('DOMContentLoaded', function(){
         AttachFile(dataTransfer.files);
     }
 
-
-
     document.getElementById('post_type').addEventListener('change', function(){
         
         if(this.value === 'post_announcement'){
@@ -73,5 +71,32 @@ document.addEventListener('DOMContentLoaded', function(){
 
 
         document.getElementById('fileInput').disabled = false;
+    });
+
+    const delete_post = document.querySelectorAll('.delete_post');
+
+    delete_post.forEach(btn => {
+        btn.addEventListener('click', function(){
+            fetch('../../src/APIs/UserApi.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    action: 'delete-post',
+                    postId: this.dataset.postId
+                })
+            }).then(response => response.json()).then(data => {
+                console.log(data);
+
+                if(data.success){
+                    window.location.href = `./classPage.php?class_code=${this.dataset.classCode}`;
+                }
+            }).catch(error => {
+                // console.error('Error:', error);
+                // emailStatus.textContent = 'Error checking email. Please try again.';
+                // emailStatus.className = 'email-status unavailable';
+            });
+        });
     });
 });
