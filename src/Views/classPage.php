@@ -443,6 +443,42 @@ try{
     </div>
 
 
+    <div class="modal fade" id="activityModal" tabindex="-1" aria-labelledby="activityModalLabel" aria-hidden="true">
+        
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 8px;">
+                <h5 class="modal-title mb-4 fw-normal" id="announcementModalLabel" style="font-size: 1.4rem;">Activity</h5>    
+
+                <div class="modal-body p-4">
+                                    
+                    <form action="<?php echo $_SERVER['PHP_SELF'] . '?class_code=' . $classCode ?>" enctype="multipart/form-data" method="POST">
+
+                        <div class="d-flex align-items-center gap-3 mb-4">
+                            
+                            <div class="mb-3">
+                                <label for="schedule" class="form-label">Schedule</label>
+
+                                <input 
+                                    type="datetime-local" 
+                                    class="form-control"
+                                    id="schedule"
+                                    name="schedule">
+                            </div>
+
+                        </div>
+
+                    </form>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
 
     <!-- This is where you posting shit -->
     <div class="modal fade" id="announcementModal" tabindex="-1" aria-labelledby="announcementModalLabel" aria-hidden="true">

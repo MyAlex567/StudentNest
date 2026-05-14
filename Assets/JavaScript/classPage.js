@@ -4,8 +4,6 @@ document.addEventListener('DOMContentLoaded', function(){
     const editor_section = document.getElementById('editor_section');
 
     fileInput.addEventListener('change', function(){
-        // const fileName = this.files.length ? Object.values(this.files).map(file => file.name).join(" | ") : 'No file choosen';
-        // filename_display.textContent = fileName;
         AttachFile(this.files);
     });
 
