@@ -31,6 +31,16 @@ class UserModel{
         return $result;
     }
 
+    // Check if email is available (returns true if not found in DB)
+    public function check_Email_Availability($email){
+        $sql = "SELECT email FROM account WHERE email = :email";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->execute(["email" => $email]);
+        $result = $stmt->fetch(\PDO::FETCH_ASSOC);
+
+        return $result === false;
+    }
+
     // Check if username is available (returns true if not found in DB)
     public function check_username_availability($username){
         $sql = "SELECT account_id FROM account WHERE username = :username";

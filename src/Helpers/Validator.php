@@ -266,7 +266,7 @@ class Validator{
      */
     public static function validateEmail($email) {
         if (empty($email)) {
-            self::$errors[] = "Email is required";
+            self::$errors[] = "Email is required {$email}";
             return false;
         }
         

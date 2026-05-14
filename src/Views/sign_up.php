@@ -109,6 +109,7 @@ if (isset($_SESSION['success'])) {
                 <div class="sign_up_info">
                     <label for="sign_uo_email">Email: </label>
                     <input type="Email" name="email" id="email" placeholder="Email">
+                    <p id="emailStatus" class="emails-status"></p>
                 </div>
 
 

@@ -106,6 +106,41 @@ class ClassController{
         }
     }
 
+    public function getClassRole($userClassInfo){
+        Validator::clearErrors();
+
+        if(!Validator::validateUsername($userClassInfo['username'])){
+            return [
+                'success' => false,
+                'message' => Validator::getErrors()
+            ];
+        }
+
+        if(!Validator::validateClassCode($userClassInfo['class_code'])){
+            return [
+                'success' => false,
+                'message' => Validator::getErrors()
+            ];
+        }
+
+        $userInfo['username'] = Sanitizer::sanitizeUsername($userClassInfo['username']);
+        $userInfo['class_code'] = Sanitizer::sanitizeClassCode($userClassInfo['class_code']);
+    
+        $result = $this->model->getClassRole($userInfo['username'], $userClassInfo['class_code']);
+
+        if($result){
+            return [
+                'success' => true,
+                'role' => $result
+            ];
+        }else{
+            return [
+                'success' => false
+            ];
+        }
+
+    }
+
     public function getUserClasses($username){
         Validator::clearErrors();
 
@@ -231,6 +266,33 @@ class ClassController{
             'uploadResult' => $folderUpload
         ];
         
+    }
+
+    public function getPost($classCode){
+        Validator::clearErrors();
+
+        if(!Validator::validateClassCode($classCode)){
+            return [
+                'success' => false,
+                'message' => Validator::getErrors()
+            ];
+        }
+
+        $sanitized = Sanitizer::sanitizeClassCode($classCode);
+
+        $result = $this->model->getClassPost($sanitized);
+
+        if($result){
+            return [
+                'success' => true,
+                'class_post' => $result
+            ];
+        }else{
+            return [
+                'success' => false,
+                'message' => 'No post found'
+            ];
+        }
     }
 }
 

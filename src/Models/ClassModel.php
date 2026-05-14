@@ -45,10 +45,11 @@ class ClassModel{
             $sql = "INSERT INTO post(class_id, created_by, post_type, title, description)
                     VALUES (:class_id, :created_by, :post_type, :title, :description)";
             $stmt = $this->conn->prepare($sql);
+
             $stmt->execute([
                 'class_id' => $classId['class_id'],
                 'created_by' => $createdby['account_id'],
-                'post_type' => $postInfo['post_type'],
+                'post_type' => $postInfo['post_type'] === 'post_material' ? 'material' : '',
                 'title' => $postInfo['post_title'],
                 'description' => $postInfo['post_description']
             ]);
@@ -80,6 +81,47 @@ class ClassModel{
 
     }
 
+    /**
+     * Get all the post and file in the class
+     */
+    public function getClassPost($classCode){
+        try{
+            $sql = "SELECT
+                        p.post_id,
+                        p.created_by, 
+                        p.post_type, 
+                        p.post_date, 
+                        p.title, 
+                        p.description, 
+                        CONCAT(u.first_name, ' ', u.last_name) AS author, 
+                        GROUP_CONCAT(
+                            at.file_name 
+                            SEPARATOR '[[FILE_SEPARATOR]]'
+                        ) AS file_names,
+
+                        GROUP_CONCAT(
+                            at.file_path 
+                            SEPARATOR '[[FILE_SEPARATOR]]'
+                        ) AS file_paths
+
+                    FROM post p
+                    LEFT JOIN attachment at ON at.post_id = p.post_id
+                    JOIN user u ON u.account_id = p.created_by
+                    WHERE p.class_id = (SELECT class_id FROM class WHERE class_code = :class_code)
+                    GROUP BY p.post_id";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute([
+                'class_code' => $classCode
+            ]);
+
+            return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        }catch(\PDOException $error){
+            return [
+                'error' => $error->getMessage()
+            ];
+        }
+    }
+
     // get the role of the current user in class
     public function getClassRole($username, $classCode){
         $sql = "SELECT cu.role FROM class_user cu
@@ -92,7 +134,7 @@ class ClassModel{
             'class_code' => $classCode 
         ]);
 
-        return $stmt->fetch(\PDO::FETCH_ASSOC);
+        return $stmt->fetchColumn();
 
     }
 

@@ -150,7 +150,7 @@ class UserController{
      * Validate email only (for API)
      */
 
-    public function validateEmailOnly($email){
+    public static function validateEmailOnly($email){
         Validator::clearErrors();
 
         // Sanitize email

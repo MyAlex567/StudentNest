@@ -15,7 +15,12 @@ $ClassController = new ClassController($classModel);
 
 
 $classCode = $_GET['class_code'] ?? '';
+$_SESSION['class_id'] = $classCode;
 $classResult = $ClassController->getClassData($classCode);
+$classData = $classResult['data'];
+$classMembers = $ClassController->selectAllClass($classCode);
+$classRole = '';
+$classPost = [];
 
 if (!$classResult['success']) {
     ?>
@@ -39,9 +44,6 @@ if (!$classResult['success']) {
     exit;
 }
 
-
-$classData = $classResult['data'];
-$classMembers = $ClassController->selectAllClass($classCode);
 
 if(isset($_POST['post']) && $_SERVER['REQUEST_METHOD'] === 'POST'){
     $postType = $_POST['post_type'] ?? '';
@@ -88,6 +90,29 @@ if(isset($_POST['post']) && $_SERVER['REQUEST_METHOD'] === 'POST'){
     exit();
 }
 
+try{
+
+    $isSuccess = $ClassController->getPost($classCode);
+    
+    if($isSuccess['success']){
+        $classPost = $isSuccess['class_post'];
+    }
+
+    $userClassInfo = [
+        'username' => $_SESSION['userData']['username'],
+        'class_code' => $classCode
+    ];
+        
+    $result = $ClassController->getClassRole($userClassInfo);
+
+    if($result['success']){
+        $classRole = $result['role'];
+    }
+    
+}catch(PDOException $e){
+    echo $e->getMessage();
+}       
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -100,6 +125,7 @@ if(isset($_POST['post']) && $_SERVER['REQUEST_METHOD'] === 'POST'){
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <link rel="stylesheet" href="../../Assets/CssDesign/classPage.css">
 </head>
+
 <body>
     <header class="navbar navbar-light bg-white border-bottom px-4 py-3 mb-4 sticky-top">
         <div class="container-fluid p-0 gap-3">
@@ -159,22 +185,108 @@ if(isset($_POST['post']) && $_SERVER['REQUEST_METHOD'] === 'POST'){
                                     </button>
                                 </div>
 
-                                <!-- Post Card -->
-                                <div class="card border-0 shadow-sm mb-3">
-                                    <div class="card-body p-4">
-                                        <div class="d-flex align-items-center gap-3 mb-3">
-                                            <img src="https://ui-avatars.com/api/?name=Instructor&background=0d6efd&color=fff" class="rounded-circle" width="45">
-                                            <div>
-                                                <h6 class="mb-0 fw-bold">Prof. Rommel</h6>
-                                                <small class="text-muted">Posted 2 hours ago</small>
+                                <!-- POST CARD -->
+
+                                <?php if(empty($classPost)): ?>
+                                    <p>No post</p>
+                                <?php else: ?>
+                                    <?php $class_post_details = [] ?>
+                                    <?php foreach ($classPost as $post): ?>
+
+                                        <?php
+                                            $class_post_details[$post['post_id']] = [
+                                                'post_data' => $post
+                                            ];
+                                        ?>
+
+                                        <div class="card border-0 shadow-sm mb-3">
+                                            <div class="card-body p-4">
+                                                <div class="d-flex align-items-center gap-3 mb-3">
+                                                    <img src="https://ui-avatars.com/api/?name=<?php echo $post['author'] ?>&background=0d6efd&color=fff" class="rounded-circle" width="45">
+                                                    <div>
+                                                        <h6 class="mb-0 fw-bold"><?php echo $post['author'] ?></h6>
+                                                        <small class="text-muted">Posted <?php 
+                                                           echo (floor((strtotime($post['post_date']) - time()) / 86400) * -1) == 0 ? 'today' : (floor((strtotime($post['post_date']) - time()) / 86400) * -1) . " days ago";
+                                                        ?></small>
+                                                    </div>
+                                                </div>
+
+                                                <span class="badge bg-info"><?php echo $post['post_type'] ?></span>
+
+                                                <a href="../Views/postView.php?post_id=<?php echo $post['post_id'] ?>" class="link-dark"><?php echo $post['title'] ?></a>
+
+                                                <p class="card-text"><?php echo $post['description'] ?></p>
+
                                             </div>
+
+                                            <?php $files = explode('[[FILE_SEPARATOR]]', $post['file_paths']) ?>
+                                                
+                                                <?php if (count($files) > 0): ?>
+                                                    <?php $file_order = 1; ?>
+                                                    <?php foreach ($files as $doc): 
+                                                        $filename = basename($doc);
+                                                        $displayName = preg_replace('/^\d+_/', '', $filename);
+                                                        $ext = strtolower(pathinfo($doc, PATHINFO_EXTENSION));
+                                                        $fileSize = filesize($doc);
+                                                        $fileSizeFormatted = ($fileSize > 1024 * 1024) ? 
+                                                            round($fileSize / (1024 * 1024), 2) . ' MB' : 
+                                                            round($fileSize / 1024, 2) . ' KB';
+                                                        
+                                                        if ($ext == 'pdf') {
+                                                            $previewContent = '<div class="document-icon">📕</div>';
+
+                                                            $class_post_details[$post['post_id']]["file_preview_details"]["file_detail{$file_order}"] = [
+                                                                'class_role' => $classRole,
+                                                                'file_path' => $doc,
+                                                                'filename' => $filename,
+                                                                'displayName' => $displayName,
+                                                                'ext' => $ext,
+                                                                'fileSize' => $fileSize,
+                                                                'fileSizeFormatted' => $fileSizeFormatted,
+                                                                'previewContent' => $previewContent
+                                                            ];
+
+                                                        } elseif ($ext == 'docx') {
+                                                            $previewContent = '<div class="document-icon">📘</div>';
+                                                            $class_post_details[$post['post_id']]["file_preview_details"]["file_detail{$file_order}"] = [
+                                                                'class_role' => $classRole,
+                                                                'file_path' => $doc,
+                                                                'filename' => $filename,
+                                                                'displayName' => $displayName,
+                                                                'ext' => $ext,
+                                                                'fileSize' => $fileSize,
+                                                                'fileSizeFormatted' => $fileSizeFormatted,
+                                                                'previewContent' => $previewContent
+                                                            ];
+                                                        } else {
+                                                            $previewContent = '<img src="' . $doc . '" alt="Preview" class="image-preview" onerror="this.style.display=\'none\'; this.parentElement.innerHTML=\'<div class=document-icon>🖼️</div>\'">';
+                                                            $class_post_details[$post['post_id']]["file_preview_details"]["file_detail{$file_order}"] = [
+                                                                'class_role' => $classRole,
+                                                                'file_path' => $doc,
+                                                                'filename' => $filename,
+                                                                'displayName' => $displayName,
+                                                                'ext' => $ext,
+                                                                'fileSize' => $fileSize,
+                                                                'fileSizeFormatted' => $fileSizeFormatted,
+                                                                'previewContent' => $previewContent
+                                                            ];
+                                                        }
+                                                        $file_order++;
+                                                    ?>
+                                                    <?php endforeach; ?>
+                                                    <?php $_SESSION['class_post_data'] = $class_post_details?>
+                                                <?php else: ?>
+                                                    <div class="empty-state" style="text-align: center; padding: 60px; background: white; border-radius: 12px;">
+                                                        <div style="font-size: 64px;">📭</div>
+                                                        <h3>No documents yet</h3>
+                                                        <p>Upload files or use FTP to add documents</p>
+                                                    </div>
+                                                <?php endif; ?>
                                         </div>
-                                        <p class="card-text">Please ensure your 3NF database normalization assignment is submitted by Friday. Check the 'Classwork' tab for the ERD rubric.</p>
-                                    </div>
-                                    <div class="card-footer bg-transparent border-top py-3">
-                                        <input type="text" class="form-control form-control-sm border-0 bg-light rounded-pill px-3" placeholder="Add class comment...">
-                                    </div>
-                                </div>
+                                        
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
+                                
                             </div>
 
                             <!-- Right Column: Info (Hidden on Mobile for cleaner stream) -->
@@ -270,9 +382,6 @@ if(isset($_POST['post']) && $_SERVER['REQUEST_METHOD'] === 'POST'){
                                 <option value="post_activity">Activity</option>
                                 <option value="post_material">Material</option>
                             </select>
-
-                            <p class="mb-0" id="filename_display" style="font-style: italic;">No file Choosen</p>
-
                         </div>
                     
                         <!-- Editor Section -->
@@ -282,7 +391,10 @@ if(isset($_POST['post']) && $_SERVER['REQUEST_METHOD'] === 'POST'){
                                 name="announcement"
                                 placeholder="Announce something to your class"
                                 style="resize: none;"></textarea>
-                            
+                        </div>
+                    
+                        <div id="attach_file_container" class="attach_file_container">
+                            <p id="fileName" class="mb-0">No file selected</p>
                         </div>
 
                         <!-- Footer Actions -->

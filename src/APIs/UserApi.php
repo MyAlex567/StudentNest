@@ -51,6 +51,9 @@ class UserApi{
             case 'check-username':
                 $this->check_username_availability();
                 break;
+            case 'check-email':
+                $this->check_email_availability();
+                break;
             case 'get-class':
                 $this->getUserClass();
                 break;
@@ -129,21 +132,31 @@ class UserApi{
 
     }
 
-    // private function selectAll(){
-    //     if(!$this->usermodel->selectAll()){
-    //         echo json_encode([
-    //             'available' => false,
-    //             'valid' => false,
-    //         ]);
-    //         return;
-    //     }
+    private function check_email_availability(){
+        $input = json_decode(file_get_contents('php://input'), true); 
+        $email = $input['email'] ?? '';
 
-    //     echo json_encode([
-    //         'available' => true,
-    //         'valid' => true,
-    //         'data' => $this->usermodel->selectAll()
-    //     ]);
-    // }
+        $validationResult = UserController::validateEmailOnly($email);
+
+        if(!$validationResult['valid']){
+            echo json_encode([
+                'available' => false,
+                'valid' => false,
+                'errors' => $validationResult['errors']
+            ]);
+            return;
+        }
+
+        $isAvailable = $this->usermodel->check_Email_Availability($email);
+
+        echo json_encode([
+            'available' => $isAvailable,
+            'valid' => true,
+            'username' => $validationResult['email'],
+            'message' => $isAvailable ? 'Email available' : 'Email is already taken'
+        ]);
+
+    }
 
 
 }
