@@ -214,6 +214,66 @@ class ClassController{
         }
     }
 
+    public function createActivity($postInfo){
+        Validator::clearErrors();
+
+        if(!Validator::validateUsername($postInfo['username'])){
+            return [
+                'success' => false,
+                'message' => Validator::getErrors()
+            ];
+        }
+
+        if(!Validator::validateClassCode($postInfo['class_code'])){
+            return [
+                'success' => false,
+                'message' => Validator::getErrors()
+            ];
+        }
+
+        if(!Validator::validatePostType($postInfo['post_type'])){
+            return [
+                'success' => false,
+                'message' => Validator::getErrors()
+            ];  
+        }
+
+        if(!Validator::validateDueDate($postInfo['due_date'])){
+
+        }
+
+        if(!Validator::validateTitle($postInfo['activity_title'])){
+            return [
+                'success' => false,
+                'message' => Validator::getErrors()
+            ];
+        }
+
+        if(!Validator::validateDescription($postInfo['activity_description'])){
+            return [
+                'success' => false,
+                'message' => Validator::getErrors()
+            ];
+        }
+
+        $postInfo['username'] = Sanitizer::sanitizeUsername($postInfo['username']);
+        $postInfo['class_code'] = Sanitizer::sanitizeClassCode($postInfo['class_code']);
+
+        $folderUpload = [];
+
+        if(!empty($postInfo['activity_file'])){
+            $folderUpload = $this->storage->store($_SESSION['userData']['username'], $postInfo['post_type'], $postInfo['activity_file']);
+        }
+
+        $uploadActivity = $this->model->storeActivityPost($postInfo, $folderUpload);
+
+        return [
+            'success' => true,
+            'message' => 'Failed To create Activity' 
+        ];
+
+    }
+
     public function createPost($postInfo){
         Validator::clearErrors();
 
@@ -280,7 +340,6 @@ class ClassController{
         }
 
         $sanitized = Sanitizer::sanitizePostId($postId);
-        $result = [];
         $deleteFile = [];
 
         // Deleting file in folder
@@ -289,12 +348,8 @@ class ClassController{
 
             $deleteFile = $this->storage->deleteFile($paths);
 
-            if($deleteFile['successCount'] > 0){
-                $result = $this->model->deletePost($sanitized);
-            }
-
         }
-
+        $result = $this->model->deletePost($sanitized);
         // Deleting data in database
         if($result['success']){
             return [
@@ -308,6 +363,34 @@ class ClassController{
             'success' => false,
             'message' => $result['message'] ?? 'Failed to delete post'
         ];
+    }
+
+    public function getActivityPost($classCode){
+        Validator::clearErrors();
+
+        if(!Validator::validateClassCode($classCode)){
+            return [
+                'success' => false,
+                'message' => Validator::getErrors()
+            ];
+        }
+
+        $sanitized = Sanitizer::sanitizeClassCode($classCode);
+
+        $result = $this->model->getClassActivity($sanitized);
+
+        if($result){
+            return [
+                'success' => true,
+                'class_post' => $result
+            ];
+        }else{
+            return [
+                'success' => false,
+                'message' => 'No post found'
+            ];
+        }
+    
     }
 
     public function getPost($classCode){

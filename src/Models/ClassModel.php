@@ -21,6 +21,79 @@ class ClassModel{
         return $this->conn->lastInsertId();
     }
 
+    public function storeActivity($duedate, $postID){
+        $sql = "INSERT INTO activity(post_id, due_date) VALUES(:post_id, :due_date)";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->execute([
+            'post_id' => $postID,
+            'due_date' => $duedate
+        ]);
+
+        return $this->conn->lastInsertId();
+    }
+
+    public function storeActivityPost($postInfo, $filePaths){
+        try{
+            $this->conn->beginTransaction();
+
+            // get class id
+            $sql = "SELECT class_id FROM class WHERE class_code = :class_code";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute([
+                'class_code' => $postInfo['class_code']
+            ]);
+            $classId = $stmt->fetch(\PDO::FETCH_ASSOC);
+
+            // get created by references
+            $sql2 = "SELECT account_id FROM account WHERE username = :username";
+            $stmt2 = $this->conn->prepare($sql2);
+            $stmt2->execute([
+                'username' => $postInfo['username']
+            ]);
+            $createdby = $stmt2->fetch(\PDO::FETCH_ASSOC);
+
+            // Insert into post
+            $sql = "INSERT INTO post(class_id, created_by, post_type, title, description)
+                    VALUES (:class_id, :created_by, :post_type, :title, :description)";
+            $stmt = $this->conn->prepare($sql);
+
+            $stmt->execute([
+                'class_id' => $classId['class_id'],
+                'created_by' => $createdby['account_id'],
+                'post_type' => $postInfo['post_type'] === 'post_activity' ? 'activity' : '',
+                'title' => $postInfo['activity_title'],
+                'description' => $postInfo['activity_description'] === '' ? $postInfo['activity_description'] : 'No Available Description'
+            ]);
+
+            // get the last inserted id which is the post
+            $lastinsertedId = $this->conn->lastInsertId();
+
+            // decide where to insert the post
+
+            $this->storeActivity($postInfo['due_date'], $lastinsertedId);
+
+
+            // Loop for insertion in data base
+            foreach($filePaths['path'] as $file){
+
+                $sql3 = "INSERT INTO attachment(post_id, file_path, file_name)
+                        VALUES (:post_id, :file_path, :file_name)";
+                $stmt3 = $this->conn->prepare($sql3);
+                $stmt3->execute([
+                    "post_id" => $lastinsertedId,
+                    'file_path' => $file['file_path'],
+                    'file_name' => $file['file_name'],
+                ]);
+            }   
+
+            $this->conn->commit();
+
+        }catch(\PDOException $error){
+            echo $error->getMessage();
+            $this->conn->rollBack();
+        }
+    }
+
     public function storePost($postInfo, $filePaths){
         try{
             $this->conn->beginTransaction();
@@ -57,7 +130,10 @@ class ClassModel{
             // get the last inserted id which is the post
             $lastinsertedId = $this->conn->lastInsertId();
 
+            // decide where to insert the post
+
             $this->storeMaterial($lastinsertedId);
+
 
             // Loop for insertion in data base
             foreach($filePaths['path'] as $file){
@@ -79,6 +155,48 @@ class ClassModel{
             $this->conn->rollBack();
         }
 
+    }
+
+    public function getClassActivity($classCode){
+        try{
+            $sql = "SELECT
+                        p.post_id,
+                        p.created_by,
+                        p.post_type,
+                        p.post_date,
+                        p.title,
+                        p.description,
+                        act.due_date,
+                        CONCAT(u.first_name, ' ', u.last_name) AS author,
+
+                        GROUP_CONCAT(
+                            at.file_name
+                            SEPARATOR '[[FILE_SEPARATOR]]'
+                        ) AS file_name,
+                        GROUP_CONCAT(
+                            at.file_path
+                            SEPARATOR '[[FILE_SEPARATOR]]'
+                        ) AS file_paths
+
+                    FROM post p
+                    LEFT JOIN attachment at ON at.post_id = p.post_id
+                    JOIN user u ON u.account_id = p.created_by
+                    JOIN activity act ON act.post_id = p.post_id
+                    WHERE p.class_id = (SELECT class_id FROM class WHERE class_code = :class_code)
+                    AND p.post_type = 'activity'
+                    GROUP BY p.post_id;";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute([
+                'class_code' => $classCode
+            ]);
+
+            return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+
+        }catch(\PDOException $error){
+            return [
+                'error' => $error->getMessage()
+            ];
+        }
     }
 
     /**

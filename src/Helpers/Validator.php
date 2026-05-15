@@ -257,6 +257,29 @@ class Validator{
         return true;
     }
 
+    public static function validateDueDate($dueDate){
+        if (empty($dueDate)) {
+            self::$errors[] = 'Due date is required';
+            return false;
+        }
+
+        // expects: 2026-05-19T15:30
+        $date = \DateTime::createFromFormat('Y-m-d\TH:i', $dueDate);
+
+        if (!$date || $date->format('Y-m-d\TH:i') !== $dueDate) {
+            self::$errors[] = 'Invalid date format';
+            return false;
+        }
+
+        if ($date < new \DateTime()) {
+            self::$errors[] = 'Due date should not be in the past';
+            return false;
+        }
+
+        return true;
+
+    }
+
     /**
      * Validate email
      */

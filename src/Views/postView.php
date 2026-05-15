@@ -57,7 +57,8 @@ if (empty($documents)) {
 
     <div class="documentContainer">
         <div class="document-grid">
-            <?php if (count($documents) > 0): ?>
+            <?php if (count($documents) > 0 && $documents['post_data']['file_paths'] && $documents['file_preview_details']): ?>
+
                 <?php for($index = 1; $index <= count($documents['file_preview_details']); $index++): ?>
 
                     <div class="document-card" onclick="viewDocument('<?php echo $documents['file_preview_details']['file_detail'.$index]['file_path']; ?>', '<?php echo $documents['file_preview_details']['file_detail'.$index]['ext']; ?>')">
@@ -79,8 +80,7 @@ if (empty($documents)) {
             <?php else: ?>
                 <div class="empty-state" style="text-align: center; padding: 60px; background: white; border-radius: 12px;">
                     <div style="font-size: 64px;">📭</div>
-                    <h3>No documents yet</h3>
-                    <p>Upload files or use FTP to add documents</p>
+                    <h3>No documents To see Here Bro</h3>
                 </div>
             <?php endif; ?>
         </div>

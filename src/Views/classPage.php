@@ -19,8 +19,10 @@ $_SESSION['class_id'] = $classCode;
 $classResult = $ClassController->getClassData($classCode);
 $classData = $classResult['data'] ?? '';
 $classMembers = $ClassController->selectAllClass($classCode);
+$class_post_details = [];
 $classRole = '';
 $classPost = [];
+$classActivity = [];
 
 if (!$classResult['success'] && empty($_SESSION['userData'])) {
     ?>
@@ -46,18 +48,33 @@ if (!$classResult['success'] && empty($_SESSION['userData'])) {
 
 // Handle posting
 
-if(isset($_POST['post_activity']) && $_SERVER['REQUEST_METHOD'] === "POST"){
+if(isset($_POST['submit_activity']) && $_SERVER['REQUEST_METHOD'] === "POST"){
     $postData = [
         'username' => $_SESSION['userData']['username'],
         'class_code' => $classCode,
-        'post_type' => $_POST['post_type'] ?? '',
-        'file' => $_FILES['file'] ?? '',
+        'post_type' => 'post_activity',
+        'activity_file' => $_FILES['activity_file'] ?? '',
         'due_date' => $_POST['due_date'],
-        'post_title' => $_POST['post_title'] ?? '',
-        'post_description' => $_POST['post_description'] ?? ''
+        'activity_title' => $_POST['activity_title'] ?? '',
+        'activity_description' => $_POST['activity_description'] ?? ''
     ];
 
-    var_dump($postData);
+    $result = $ClassController->createActivity($postData);
+
+    if($result['success']){
+        $_SESSION['toast'] = [
+            'type' => 'success',
+            'message' => 'Upload Success'
+        ];
+    }else{
+        $_SESSION['toast'] = [
+            'type' => 'error',
+            'message' => implode(', ', $result['message'])
+        ];        
+    }
+
+    header('Location: ' . $_SERVER['PHP_SELF'] . "?class_code={$classCode}");
+    exit();
 }
 
 if(isset($_POST['post']) && $_SERVER['REQUEST_METHOD'] === 'POST'){
@@ -79,7 +96,7 @@ if(isset($_POST['post']) && $_SERVER['REQUEST_METHOD'] === 'POST'){
             if(!$result['success']){
                 $_SESSION['toast'] = [
                     'type' => 'error',
-                    'message' => 'failed to upload'
+                    'message' => implode(', ', $result['message'])
                 ];
             }else{
                 $_SESSION['toast'] = [
@@ -106,6 +123,11 @@ if(isset($_POST['post']) && $_SERVER['REQUEST_METHOD'] === 'POST'){
 try{
 
     $isSuccess = $ClassController->getPost($classCode);
+    $getAct = $ClassController->getActivityPost($classCode);
+
+    if($getAct['success']){
+        $getAct = $getAct['class_post'];
+    }
     
     if($isSuccess['success']){
         $classPost = $isSuccess['class_post'];
@@ -205,7 +227,7 @@ try{
                                 <?php else: ?>
                                     <?php $class_post_details = [] ?>
                                     <?php foreach ($classPost as $post): ?>
-
+                                    
                                         <?php
                                             $class_post_details[$post['post_id']] = [
                                                 'post_data' => $post
@@ -248,8 +270,9 @@ try{
                                                     </div>
                                                 </div>
 
-                                                <span class="badge bg-info"><?php echo $post['post_type'] ?></span>
-
+                                                <span class="badge <?php echo $post['post_type'] === 'material' ? 'bg-dark' : 'bg-danger'; ?>">
+                                                    <?php echo $post['post_type']; ?>
+                                                </span>
                                                 <a href="../Views/postView.php?post_id=<?php echo $post['post_id'] ?>" class="link-dark">
                                                     <?php echo $post['title'] ?>
                                                 </a>
@@ -259,7 +282,7 @@ try{
                                             </div>
 
                                             <?php $files = $post['file_paths'] ? explode('[[FILE_SEPARATOR]]', $post['file_paths']) : []?>
-                                                
+
                                                 <?php if (count($files) > 0): ?>
                                                     <?php $file_order = 1; ?>
                                                     <?php foreach ($files as $doc): 
@@ -341,7 +364,7 @@ try{
                                                         <button type="button" class="btn btn-danger delete_post" data-bs-dismiss="modal"
                                                                 data-post-id="<?php echo $post['post_id']; ?>"
                                                                 data-class-code="<?php echo $classCode; ?>">
-                                                            Danger
+                                                            Delete
                                                         </button>
                                                     </div>
 
@@ -398,11 +421,84 @@ try{
                             <?php endif ?>
                         </div>
 
-                        <div class="card border-0 shadow-sm p-5 text-center">
-                            <i class="bi bi-journal-text display-1 text-muted mb-3"></i>
-                            <h4>Classwork Content</h4>
-                            <p class="text-muted">Assignments and materials will appear here.</p>
-                        </div>
+
+                        <?php if(!empty($getAct)): ?>
+                            <?php foreach($getAct as $post): ?>
+                                <div class="card border-0 shadow-sm mb-3">
+                                    <div class="card-body p-4 position-relative">
+
+                                        <div class="d-flex justify-content-between align-items-start mb-3 flex-wrap gap-3">
+
+                                            <div class="d-flex align-items-center gap-3">
+                                                <img src="https://ui-avatars.com/api/?name=<?php echo $post['author'] ?>&background=0d6efd&color=fff"
+                                                    class="rounded-circle"
+                                                    width="45">
+
+                                                <div>
+                                                    <h6 class="mb-0 fw-bold">
+                                                        <?php echo $post['author'] ?>
+                                                    </h6>
+
+                                                    <small class="text-muted">
+                                                        Posted
+                                                        <?php
+                                                        echo (floor((strtotime($post['post_date']) - time()) / 86400) * -1) == 0
+                                                            ? 'today'
+                                                            : (floor((strtotime($post['post_date']) - time()) / 86400) * -1) . " days ago";
+                                                        ?>
+                                                    </small>
+                                                </div>
+                                            </div>
+
+                                            <div class="text-md-end">
+                                                <h6 class="mb-0 fw-bold text-danger">
+                                                    Due Date
+                                                </h6>
+
+                                                <small class="text-muted">
+                                                    <?php echo date('F d, Y h:i A', strtotime($post['due_date'])); ?>
+                                                </small>
+                                            </div>
+
+                                        </div>
+
+                                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+
+                                            <span class="badge <?php echo $post['post_type'] === 'material' ? 'bg-dark' : 'bg-danger'; ?>">
+                                                <?php echo ucfirst($post['post_type']); ?>
+                                            </span>
+
+                                            <form action="<?php echo $_SERVER['PHP_SELF'] . '?class_code=' . $classCode ?>" method="POST">
+
+                                                <button type="submit"
+                                                        class="btn btn-primary rounded-pill px-4 fw-semibold shadow-sm">
+
+                                                    <i class="bi bi-upload me-2"></i>
+                                                    Submit Activity
+
+                                                </button>
+
+                                            </form>
+
+                                        </div>
+
+                                        <p class="card-text mb-0">
+                                            <?php echo $post['description'] ?>
+                                        </p>
+
+                                    </div>
+                                </div>
+
+
+
+                            <?php endforeach; ?>
+                        <?php else: ?>         
+                            <div class="card border-0 shadow-sm p-5 text-center">
+                                <i class="bi bi-journal-text display-1 text-muted mb-3"></i>
+                                <h4>Classwork Content</h4>
+                                <p class="text-muted">Assignments and materials will appear here.</p>
+                            </div>
+                        <?php endif; ?>
                     </div>
 
                     <!-- People Tab Placeholder -->
@@ -448,25 +544,63 @@ try{
         <div class="modal-dialog modal-lg modal-dialog-centered">
 
             <div class="modal-content border-0 shadow-lg" style="border-radius: 8px;">
-                <h5 class="modal-title mb-4 fw-normal" id="announcementModalLabel" style="font-size: 1.4rem;">Activity</h5>    
+                 
 
                 <div class="modal-body p-4">
-                                    
+                    <h5 class="modal-title mb-4 fw-normal" id="announcementModalLabel" style="font-size: 1.4rem;">Activity</h5>  
                     <form action="<?php echo $_SERVER['PHP_SELF'] . '?class_code=' . $classCode ?>" enctype="multipart/form-data" method="POST">
 
                         <div class="d-flex align-items-center gap-3 mb-4">
-                            
                             <div class="mb-3">
-                                <label for="schedule" class="form-label">Schedule</label>
+                                <label for="due_date" class="form-label">Due Date</label>
 
                                 <input 
                                     type="datetime-local" 
                                     class="form-control"
-                                    id="schedule"
-                                    name="schedule">
+                                    id="due_date"
+                                    name="due_date">
                             </div>
-
                         </div>
+                        
+                        <!-- Text Section dito --> 
+                        <div class="rounded-top bg-light p-3 border-bottom border-secondary-subtle">
+                            <label for="activity_title">Title: </label>
+                            <input type="text" name="activity_title" id="activity_title" class="bg-light p-2 rounded-pill px-3 text-muted border" placeholder="title here...">
+                            <textarea class="form-control border-0 bg-transparent shadow-none" 
+                                rows="5" 
+                                name="activity_description"
+                                placeholder="Describe your activity"
+                                style="resize: none;"></textarea>
+                        </div>
+
+                        <div id="activity_file_display" class="activity_file_display">
+                            <p id="activity_file_display" class="mb-0">No file selected</p>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center mt-3">
+                            <div class="d-flex gap-2">
+                                <label class="btn btn-outline-secondary rounded-circle border-light-subtle circle-icon" for="file_activity" title="Upload Files"><i class="bi bi-upload"></i></label>
+                                <input 
+                                    type="file" 
+                                    name="activity_file[]" 
+                                    accept=".pdf,.docx,.jpg,.jpeg" 
+                                    id="file_activity" 
+                                    hidden multiple>
+                            </div>
+                            
+                            <div class="d-flex align-items-center gap-3">
+                                <button type="button" 
+                                        class="btn btn-link text-dark text-decoration-none fw-medium" 
+                                        style="color: black" 
+                                        data-bs-dismiss="modal">
+                                    Cancel
+                                </button>
+                                <div class="btn-group shadow-none">
+                                    <button class="btn btn-dark px-4" type="submit" name="submit_activity">Post</button>
+                                </div>
+                            </div>
+                        </div>
+
 
                     </form>
 

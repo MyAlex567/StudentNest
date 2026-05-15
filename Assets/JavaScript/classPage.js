@@ -1,13 +1,42 @@
 document.addEventListener('DOMContentLoaded', function(){
     const fileInput = document.getElementById('fileInput');
     const attach_file_container = document.getElementById('attach_file_container');
+    const activity_file_display = document.getElementById("activity_file_display");
+    const file_activity = document.getElementById("file_activity");
     const editor_section = document.getElementById('editor_section');
 
     fileInput.addEventListener('change', function(){
         AttachFile(this.files);
     });
 
+    file_activity.addEventListener('change', function(){
+        activityAttach(this.files);
+    });
 
+
+    // render for displaying the activity file
+    function activityAttach(files){
+        let attach_display = '';
+
+        for(let index = 0; index < files.length; index++){
+            attach_display += `
+                <div id="fileItem" class="d-flex justify-content-between align-items-center mt-3">
+
+                    <p class="mb-0">${files[index].name}</p>
+
+                    <button type="button" class="btn btn-sm btn-danger" onclick="removeActivityFile(${index})">
+                        ×
+                    </button>
+
+                </div>
+            `;
+        }
+
+        activity_file_display.innerHTML = attach_display;
+
+    }
+
+    // render for displaying the attach file
     function AttachFile(files){
         let attach_display = '';
 
@@ -27,6 +56,21 @@ document.addEventListener('DOMContentLoaded', function(){
         attach_file_container.innerHTML = attach_display;
     }
 
+    // removing attach activity
+    window.removeActivityFile = function(index){
+        const dataTransfer = new DataTransfer();
+
+        for(let i = 0; i < file_activity.files.length; i++){
+            if(index !== i){
+                dataTransfer.items.add(file_activity.files[i]);
+            }
+        }
+
+        file_activity.files = dataTransfer.files;
+        activityAttach(dataTransfer.files);
+    }
+
+    // removing the attach file
     window.removeFile = function(index){
         const dataTransfer = new DataTransfer();
 
@@ -86,7 +130,7 @@ document.addEventListener('DOMContentLoaded', function(){
                 })
             }).then(response => response.json()).then(data => {
                 console.log(data);
-
+                
                 if(data.success){
                     window.location.href = `./classPage.php?class_code=${this.dataset.classCode}`;
                 }

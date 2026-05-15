@@ -27,6 +27,9 @@ SET time_zone = "+00:00";
 -- Table structure for table `account`
 --
 
+CREATE Database student_nest_db;
+use student_nest_db;
+
 CREATE TABLE `account` (
   `account_id` int(11) NOT NULL,
   `username` varchar(255) NOT NULL,
