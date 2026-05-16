@@ -144,6 +144,7 @@ if(isset($_POST['logout']) && $_SERVER['REQUEST_METHOD'] === 'POST'){
         <ul class="nav flex-column gap-2">
             <li class="nav-item"><a class="nav-link active" href="#"><i class="bi bi-grid-fill me-2"></i> <span class="nav-text">Dashboard</span></a></li>
             <li class="nav-item" id="class_toggle"><a class="nav-link" href="#"><i class="bi bi-book me-2"></i> <span class="nav-text">My Class</span></a></li>
+            <li class="nav-item" id="check_submitted_toggle"><a class="nav-link" href="#"><i class="bi bi-file-earmark-check me-2"></i> <span class="nav-text">Submitted output</span></a></li>
             <li class="nav-item" id="to_be_graded_toggle"><a class="nav-link" href="#"><i class="bi bi-file-earmark-text me-2"></i> <span class="nav-text">To be Graded</span></a></li>
             <li class="nav-item" id="settings_toggle"><a class="nav-link" href="#"><i class="bi bi-gear me-2"></i> <span class="nav-text">Settings</span></a></li>
         </ul>

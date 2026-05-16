@@ -1,17 +1,83 @@
 <?php
+declare(strict_types=1);
+
+/**
+ * ClassModel file.
+ *
+ * Handles database operations for classes, posts, announcements, materials,
+ * activities, submissions, grading, and related file paths.
+ *
+ * @package App\Models
+ * @author lisayAlex <202401-00307@dwc-legazpi.edu>
+ * @since 2026-05-17
+ */
+
 namespace App\Models;
 
 use App\Helpers\Database;
 
+/**
+ * Handles class-related database queries and transactions.
+ *
+ * This model manages class creation, joining, posts, activities,
+ * announcements, materials, submissions, grading, and uploaded file paths.
+ *
+ * @package App\Models
+ * @author lisayAlex <202401-00307@dwc-legazpi.edu>
+ * @since 2026-05-17
+ */
 class ClassModel{
+    /**
+     * Database connection instance.
+     *
+     * @var \PDO
+     */
     private $conn;
 
     // Store database connection when model is created
+    /**
+     * Create a new ClassModel instance.
+     *
+     * Stores the database connection from the provided Database helper.
+     *
+     * @param Database $database Database helper instance.
+     *
+     * @author lisayAlex <202401-00307@dwc-legazpi.edu>
+     * @since 2026-05-17
+     */
     public function __construct(Database $database){
         $this->conn = $database->getConnection();
     }
 
-    public function storeMaterial($postID){
+    /**
+     * Store an announcement record linked to a post.
+     *
+     * @param mixed $postID ID of the post connected to the announcement.
+     * @return string|false Last inserted announcement ID, or false on failure.
+     *
+     * @author lisayAlex <202401-00307@dwc-legazpi.edu>
+     * @since 2026-05-17
+     */
+    public function storeAnnouncement($postID): string|false{
+        $sql = "INSERT INTO announcement(post_id) VALUES (:post_id)";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->execute([
+            'post_id' => $postID
+        ]);
+
+        return $this->conn->lastInsertId();
+    }    
+
+    /**
+     * Store a material record linked to a post.
+     *
+     * @param mixed $postID ID of the post connected to the material.
+     * @return string|false Last inserted material ID, or false on failure.
+     *
+     * @author lisayAlex <202401-00307@dwc-legazpi.edu>
+     * @since 2026-05-17
+     */
+    public function storeMaterial($postID): string|false{
         $sql = "INSERT INTO material(post_id) VALUES (:post_id)";
         $stmt = $this->conn->prepare($sql);
         $stmt->execute([
@@ -21,7 +87,17 @@ class ClassModel{
         return $this->conn->lastInsertId();
     }
 
-    public function storeActivity($duedate, $postID){
+    /**
+     * Store an activity record linked to a post.
+     *
+     * @param mixed $duedate Due date of the activity.
+     * @param mixed $postID ID of the post connected to the activity.
+     * @return string|false Last inserted activity ID, or false on failure.
+     *
+     * @author lisayAlex <202401-00307@dwc-legazpi.edu>
+     * @since 2026-05-17
+     */
+    public function storeActivity($duedate, $postID): string|false{
         $sql = "INSERT INTO activity(post_id, due_date) VALUES(:post_id, :due_date)";
         $stmt = $this->conn->prepare($sql);
         $stmt->execute([
@@ -32,7 +108,20 @@ class ClassModel{
         return $this->conn->lastInsertId();
     }
 
-    public function storeActivityPost($postInfo, $filePaths){
+    /**
+     * Store a new activity post with attachments.
+     *
+     * Creates a post, stores its activity details, and saves uploaded file paths
+     * inside a database transaction.
+     *
+     * @param array $postInfo Activity post information.
+     * @param array $filePaths Uploaded file path information.
+     * @return void
+     *
+     * @author lisayAlex <202401-00307@dwc-legazpi.edu>
+     * @since 2026-05-17
+     */
+    public function storeActivityPost($postInfo, $filePaths): void{
         try{
             $this->conn->beginTransaction();
 
@@ -68,8 +157,6 @@ class ClassModel{
             // get the last inserted id which is the post
             $lastinsertedId = $this->conn->lastInsertId();
 
-            // decide where to insert the post
-
             $this->storeActivity($postInfo['due_date'], $lastinsertedId);
 
 
@@ -94,9 +181,28 @@ class ClassModel{
         }
     }
 
-    public function storePost($postInfo, $filePaths){
+    /**
+     * Store a new class post with attachments.
+     *
+     * Creates either a material or announcement post and saves uploaded file paths
+     * inside a database transaction.
+     *
+     * @param array $postInfo Post information.
+     * @param array $filePaths Uploaded file path information.
+     * @return void
+     *
+     * @author lisayAlex <202401-00307@dwc-legazpi.edu>
+     * @since 2026-05-17
+     */
+    public function storePost($postInfo, $filePaths): void{
         try{
             $this->conn->beginTransaction();
+
+            if($postInfo['post_type'] === 'post_material'){
+                $postInfo['post_type'] = 'material';
+            }elseif($postInfo['post_type'] === 'post_announcement'){
+                $postInfo['post_type'] = 'announcement';
+            }
 
             // get class id
             $sql = "SELECT class_id FROM class WHERE class_code = :class_code";
@@ -122,7 +228,7 @@ class ClassModel{
             $stmt->execute([
                 'class_id' => $classId['class_id'],
                 'created_by' => $createdby['account_id'],
-                'post_type' => $postInfo['post_type'] === 'post_material' ? 'material' : '',
+                'post_type' => $postInfo['post_type'],
                 'title' => $postInfo['post_title'],
                 'description' => $postInfo['post_description']
             ]);
@@ -132,7 +238,7 @@ class ClassModel{
 
             // decide where to insert the post
 
-            $this->storeMaterial($lastinsertedId);
+            $postInfo['post_type'] === 'material' ? $this->storeMaterial($lastinsertedId) : $this->storeAnnouncement($lastinsertedId);
 
 
             // Loop for insertion in data base
@@ -157,25 +263,55 @@ class ClassModel{
 
     }
 
-    public function getSubmissionData($submissionId){
-        $sql = "SELECT
-                    s.submission_id,
-                    s.activity_id,
-                    s.submitted_by,
-                    s.graded_by,
-                    s.answer_text,
-                    s.grade,
-                    s.status,
-                    s.submitted_at,
-                    s.graded_at,
-                    CONCAT(u.first_name, ' ', u.last_name) AS submitted_by_name
-                FROM activity act
-                INNER JOIN submission s ON act.activity_id = s.activity_id
-                INNER JOIN user u ON u.account_id = s.submitted_by
-                WHERE s.submission_id = :submission_id;";
+    /**
+     * Get submission details by submission ID.
+     *
+     * @param mixed $submissionId ID of the submission to retrieve.
+     * @return array|false Submission details, or false on failure.
+     *
+     * @author lisayAlex <202401-00307@dwc-legazpi.edu>
+     * @since 2026-05-17
+     */
+    public function getSubmissionData($submissionId): array|false{
+        try{
+            $sql = "SELECT
+                        s.submission_id,
+                        s.activity_id,
+                        s.submitted_by,
+                        s.graded_by,
+                        s.answer_text,
+                        s.grade,
+                        p.title,
+                        s.status,
+                        s.submitted_at,
+                        s.graded_at,
+                        CONCAT(u.first_name, ' ', u.last_name) AS submitted_by_name
+                    FROM activity act
+                    INNER JOIN submission s ON act.activity_id = s.activity_id
+                    INNER JOIN post p ON p.post_id = act.post_id
+                    INNER JOIN user u ON u.account_id = s.submitted_by
+                    WHERE s.submission_id = :submission_id;";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute([
+                'submission_id' => $submissionId
+            ]);
+
+            return $stmt->fetch(\PDO::FETCH_ASSOC);
+        }catch(\PDOException $error){
+            return false;
+        }
     }
 
-    public function getTobeGradedAt($username){
+    /**
+     * Get submissions that need grading for a teacher.
+     *
+     * @param mixed $username Username of the teacher.
+     * @return array List of submissions to be graded.
+     *
+     * @author lisayAlex <202401-00307@dwc-legazpi.edu>
+     * @since 2026-05-17
+     */
+    public function getTobeGradedAt($username): array{
         $sql = "SELECT
                     s.submission_id,
                     s.activity_id,
@@ -202,7 +338,16 @@ class ClassModel{
         return $stmt->fetchAll(\PDO::FETCH_ASSOC);
     }
 
-    public function getClassActivity($classCode){
+    /**
+     * Get all activity posts for a class.
+     *
+     * @param mixed $classCode Class code used to find activities.
+     * @return array List of class activities or error information.
+     *
+     * @author lisayAlex <202401-00307@dwc-legazpi.edu>
+     * @since 2026-05-17
+     */
+    public function getClassActivity($classCode): array{
         try{
             $sql = "SELECT
                         p.post_id,
@@ -248,7 +393,16 @@ class ClassModel{
     /**
      * Get all the post and file in the class
      */
-    public function getClassPost($classCode){
+    /**
+     * Get all posts and attached files in a class.
+     *
+     * @param mixed $classCode Class code used to find posts.
+     * @return array List of class posts or error information.
+     *
+     * @author lisayAlex <202401-00307@dwc-legazpi.edu>
+     * @since 2026-05-17
+     */
+    public function getClassPost($classCode): array{
         try{
             $sql = "SELECT
                         p.post_id,
@@ -287,7 +441,17 @@ class ClassModel{
     }
 
     // get the role of the current user in class
-    public function getClassRole($username, $classCode){
+    /**
+     * Get the current user's role in a class.
+     *
+     * @param mixed $username Username of the current user.
+     * @param mixed $classCode Class code to check.
+     * @return mixed User role in the class.
+     *
+     * @author lisayAlex <202401-00307@dwc-legazpi.edu>
+     * @since 2026-05-17
+     */
+    public function getClassRole($username, $classCode): mixed{
         $sql = "SELECT cu.role FROM class_user cu
                 JOIN account a ON a.account_id = cu.account_id
                 JOIN class c ON c.class_id = cu.class_id
@@ -302,7 +466,16 @@ class ClassModel{
 
     }
 
-    public function selectAllClass($classCode){
+    /**
+     * Get all users enrolled in a class.
+     *
+     * @param mixed $classCode Class code to search.
+     * @return array List of users and their roles.
+     *
+     * @author lisayAlex <202401-00307@dwc-legazpi.edu>
+     * @since 2026-05-17
+     */
+    public function selectAllClass($classCode): array{
         $sql = "SELECT CONCAT(u.first_name, ' ', u.last_name) as full_name, cu.role FROM class_user cu
                 JOIN user u ON u.account_id = cu.account_id
                 JOIN class c ON c.class_id = cu.class_id
@@ -316,7 +489,15 @@ class ClassModel{
     }
 
     // Generate a random shit classCode
-    private function generateClassCode(){
+    /**
+     * Generate a unique class code.
+     *
+     * @return string Unique generated class code.
+     *
+     * @author lisayAlex <202401-00307@dwc-legazpi.edu>
+     * @since 2026-05-17
+     */
+    private function generateClassCode(): string{
 
         // check if the generated code is already exist in the class table
         do{
@@ -339,7 +520,18 @@ class ClassModel{
     }
 
     // Insert new class and related class_user (transactional)
-    public function createClass($classData){
+    /**
+     * Create a new class and assign the creator as teacher.
+     *
+     * Inserts records into the class and class_user tables inside a transaction.
+     *
+     * @param array $classData Class information.
+     * @return string|false Last inserted class ID, or false on failure.
+     *
+     * @author lisayAlex <202401-00307@dwc-legazpi.edu>
+     * @since 2026-05-17
+     */
+    public function createClass($classData): string|false{
         try{
             // Start transaction to ensure both inserts succeed or fail together
             $this->conn->beginTransaction(); 
@@ -382,7 +574,17 @@ class ClassModel{
         }
     }
 
-    public function isAlreadyJoined($username, $Code){
+    /**
+     * Check if a user is already joined in a class.
+     *
+     * @param mixed $username Username of the user.
+     * @param mixed $Code Class code to check.
+     * @return bool True if already joined, otherwise false.
+     *
+     * @author lisayAlex <202401-00307@dwc-legazpi.edu>
+     * @since 2026-05-17
+     */
+    public function isAlreadyJoined($username, $Code): bool{
         try{
 
             $sql = "SELECT 1 FROM class_user cu
@@ -403,7 +605,16 @@ class ClassModel{
         }
     }
 
-    public function joinClass($Code){
+    /**
+     * Join the current user to a class as a student.
+     *
+     * @param mixed $Code Class code to join.
+     * @return bool True if joining succeeds, otherwise false.
+     *
+     * @author lisayAlex <202401-00307@dwc-legazpi.edu>
+     * @since 2026-05-17
+     */
+    public function joinClass($Code): bool{
 
         try{
             $sql = "SELECT class_id FROM class WHERE class_code = :class_code";
@@ -435,7 +646,16 @@ class ClassModel{
     }
 
     // use username of the user to get the current class of the user
-    public function getUserClasses(string $username){
+    /**
+     * Get all classes joined by a user.
+     *
+     * @param string $username Username of the user.
+     * @return array List of classes joined by the user.
+     *
+     * @author lisayAlex <202401-00307@dwc-legazpi.edu>
+     * @since 2026-05-17
+     */
+    public function getUserClasses(string $username): array{
         $sql = "
             SELECT CONCAT(creator.first_name, ' ', creator.last_name) AS creator, c.class_name, c.subject, c.room, c.section, c.class_code FROM class c
             JOIN class_user cu ON cu.class_id = c.class_id
@@ -449,7 +669,16 @@ class ClassModel{
         return $stmt->fetchAll(\PDO::FETCH_ASSOC);
     }
 
-    public function deletePost($postID){
+    /**
+     * Delete a post by post ID.
+     *
+     * @param mixed $postID ID of the post to delete.
+     * @return array Result message of the delete operation.
+     *
+     * @author lisayAlex <202401-00307@dwc-legazpi.edu>
+     * @since 2026-05-17
+     */
+    public function deletePost($postID): array{
         try{
 
             $sql = "DELETE FROM post WHERE post_id = :post_id";
@@ -480,7 +709,42 @@ class ClassModel{
         }
     }
 
-    public function getSubmissionFile($postID){
+    /**
+     * Use Submission Id to get the file paths
+     */
+    /**
+     * Get submitted file paths by submission ID.
+     *
+     * @param mixed $subId ID of the submission.
+     * @return array|false List of submitted files, or false on failure.
+     *
+     * @author lisayAlex <202401-00307@dwc-legazpi.edu>
+     * @since 2026-05-17
+     */
+    public function getSubmissionFilePath($subId): array|false{
+        try{
+            $sql = "SELECT file_name, file_path FROM submission_file WHERE submission_id = :submission_id";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute([
+                'submission_id' =>  $subId
+            ]);
+
+            return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        }catch(\PDOException $error){
+            return false;
+        }
+    }
+
+    /**
+     * Get submitted file paths for an activity post.
+     *
+     * @param mixed $postID ID of the activity post.
+     * @return array List of submitted file paths.
+     *
+     * @author lisayAlex <202401-00307@dwc-legazpi.edu>
+     * @since 2026-05-17
+     */
+    public function getSubmissionFile($postID): array{
         $sql = "SELECT sf.file_path FROM activity act
                 INNER JOIN submission s ON act.activity_id = s.activity_id
                 INNER JOIN submission_file sf ON s.submission_id = sf.submission_id
@@ -493,7 +757,16 @@ class ClassModel{
         return $stmt->fetchAll(\PDO::FETCH_ASSOC);
     }
 
-    public function getFilePaths($postID){
+    /**
+     * Get attachment file paths by post ID.
+     *
+     * @param mixed $postID ID of the post.
+     * @return array|false List of attachment paths, or false on failure.
+     *
+     * @author lisayAlex <202401-00307@dwc-legazpi.edu>
+     * @since 2026-05-17
+     */
+    public function getFilePaths($postID): array|false{
         try{
             $sql = "SELECT file_path FROM attachment WHERE post_id = :post_id";
             $stmt = $this->conn->prepare($sql);
@@ -507,7 +780,49 @@ class ClassModel{
         }
     }
 
-    public function getClassData($classCode){
+    /**
+     * Submit a grade for a student submission.
+     *
+     * Updates grade details, grading teacher, graded timestamp, and status.
+     *
+     * @param array $grade_details Grade details including username, grade, and submission ID.
+     * @return bool True if a row was updated, otherwise false.
+     *
+     * @author lisayAlex <202401-00307@dwc-legazpi.edu>
+     * @since 2026-05-17
+     */
+    public function submitGrade($grade_details): bool{
+        try{
+            $sql = "UPDATE submission
+                    SET
+                        graded_by = (SELECT account_id FROM account WHERE username = :username),
+                        grade = :grade,
+                        graded_at = NOW(),
+                        status = 'graded'
+                    WHERE submission_id = :submission_id";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute([
+                'username' => $grade_details['username'],
+                'grade'=> $grade_details['grade'],
+                'submission_id' => $grade_details['submission_id']
+            ]);
+            return $stmt->rowCount() > 0;
+        }catch(\PDOException){
+            return false;
+        }
+
+    }
+
+    /**
+     * Get class data by class code.
+     *
+     * @param mixed $classCode Class code to search.
+     * @return array|false Class data, or false if not found.
+     *
+     * @author lisayAlex <202401-00307@dwc-legazpi.edu>
+     * @since 2026-05-17
+     */
+    public function getClassData($classCode): array|false{
         $sql = "SELECT created_by, class_name, subject, room, section, class_code, created_at FROM class WHERE class_code = :class_code";
         $stmt = $this->conn->prepare($sql);
         $stmt->execute(['class_code' => $classCode]);
@@ -515,7 +830,16 @@ class ClassModel{
         return $stmt->fetch(\PDO::FETCH_ASSOC);
     }
 
-    public function getDueDate($activityId){
+    /**
+     * Get the due date of an activity.
+     *
+     * @param mixed $activityId ID of the activity.
+     * @return array|false Activity due date, or false if not found.
+     *
+     * @author lisayAlex <202401-00307@dwc-legazpi.edu>
+     * @since 2026-05-17
+     */
+    public function getDueDate($activityId): array|false{
         $sql = "SELECT due_date FROM activity WHERE activity_id = :activity_id";
         $stmt = $this->conn->prepare($sql);
         $stmt->execute([
@@ -525,7 +849,20 @@ class ClassModel{
         return $stmt->fetch(\PDO::FETCH_ASSOC);
     }
 
-    public function submission($submissionData, $status, $filePaths){
+    /**
+     * Store a student submission and submitted files.
+     *
+     * Creates a submission record and saves its uploaded files inside a transaction.
+     *
+     * @param array $submissionData Submission information.
+     * @param mixed $status Submission status.
+     * @param array $filePaths Uploaded submission file path information.
+     * @return string|false Last inserted submission ID, or false on failure.
+     *
+     * @author lisayAlex <202401-00307@dwc-legazpi.edu>
+     * @since 2026-05-17
+     */
+    public function submission($submissionData, $status, $filePaths): string|false{
         try{
             $this->conn->beginTransaction();
             $sql = "INSERT INTO submission (activity_id, submitted_by, answer_text, status) VALUES

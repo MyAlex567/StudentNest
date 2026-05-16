@@ -456,6 +456,105 @@ class ClassController{
     }
 
 
+    /**
+     * Get submission file by id
+     */
+    public function getSubmissionFilePaths($subId){
+        Validator::clearErrors();
+
+        if(!Validator::validateId($subId)){
+            return [
+                'success' => false,
+                'message' => Validator::getErrors()
+            ];
+        }
+
+        $submissionId = Sanitizer::sanitizeId($subId);
+
+        $result = $this->model->getSubmissionFilePath($submissionId);
+
+        if($result){
+            return [
+                'success' => true,
+                'data' => $result
+            ];
+        }
+
+        return [
+            'success' => false
+        ];
+    }
+
+    public function submitGrade($grade_details){
+        Validator::clearErrors();
+
+        if(!Validator::validateId($grade_details['submission_id'])){
+            return [
+                'success' => false,
+                'message' => Validator::getErrors()
+            ];
+        }        
+
+        if(!Validator::validateGrade($grade_details['grade'])){
+            return [
+                'success' => false,
+                'message' => Validator::getErrors()
+            ];            
+        }
+
+        if(!Validator::validateUsername($grade_details['username'])){
+            return [
+                'success' => false,
+                'message' => Validator::getErrors()
+            ];            
+        }
+
+        $grade_details = [
+            'username' => Sanitizer::sanitizeUsername($grade_details['username']),
+            'grade' => Sanitizer::sanitizeGrade($grade_details['grade']),
+            'submission_id' => Sanitizer::sanitizeId($grade_details['submission_id'])
+        ];
+
+        $result = $this->model->submitGrade($grade_details);
+
+        if($result){
+            return [
+                'success' => true,
+                'message' => 'Graded Success'
+            ];
+        }
+
+        return [
+            'success' => false,
+            'message' => 'Failed To graded'
+        ];
+    }
+
+    public function getSubmissiondata($submissionId){
+        Validator::clearErrors();
+
+        if(!Validator::validateId($submissionId)){
+            return [
+                'success' => false,
+                'message' => Validator::getErrors()
+            ];
+        }
+
+        $submissionId = Sanitizer::sanitizeId($submissionId);
+
+        $getData = $this->model->getSubmissionData($submissionId);
+
+        if($getData){
+            return [
+                'success' => true,
+                'data' => $getData  
+            ];
+        }
+
+        return [
+            'success' => false
+        ];
+    }
     
     public function submitActivity($submissionData){
         Validator::clearErrors();

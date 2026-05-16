@@ -46,7 +46,6 @@ export function loadTobeGraded(){
                 console.log(submitted.submitted_by_name);
 
                 SettingsTxt += `
-                    <div class="row g-4">
                         <!-- Card 1 -->
                         <div class="col-12 col-md-6 col-xl-4">
                             <div class="card border-0 shadow-sm h-100" style="border-radius: 18px;">
@@ -91,8 +90,9 @@ export function loadTobeGraded(){
                                             :
                                             `
                                             <div class="d-flex justify-content-between align-items-center mb-3">
-                                                <small class="fw-semibold text-danger">
-                                                    <span class="badge bg-warning text-dark">To be graded</span>
+                                                <small class="fw-bold">
+                                                    <span class="badge bg-info text-dark">Graded: </span>
+                                                    ${submitted.grade}
                                                 </small>
                                             </div>
 
@@ -107,13 +107,12 @@ export function loadTobeGraded(){
 
                                 </div>
                             </div>
-                        </div>
-                    </div>                  
+                        </div>          
                 `;
 
 
             });
-            main_user_content.innerHTML = SettingsTxt;
+            main_user_content.innerHTML = `<div class="row g-4">${SettingsTxt}</div`;
         }
 
     }).catch(() => {

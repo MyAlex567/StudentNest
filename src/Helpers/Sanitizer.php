@@ -108,6 +108,22 @@ class Sanitizer{
         return trim(strtoupper($code));
     }
 
+    /**
+     * Sanitize Grade
+     */
+    public static function sanitizeGrade($grade) {
+        $grade = trim($grade);
+        return (float) $grade;
+    }
+
+    /**
+     * Sanitize Id
+     */
+    public static function sanitizeId($id)
+    {
+        return (int) $id;
+    }    
+
 }
 
 ?>

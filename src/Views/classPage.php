@@ -3,6 +3,7 @@ session_start();
 error_reporting(E_ALL);
 ini_set('display_errors', '1');
 ini_set('display_startup_errors', '1');
+date_default_timezone_set('Asia/Manila');
 require_once __DIR__ . '../../../vendor/autoload.php';
 
 use App\Models\ClassModel;
@@ -85,42 +86,27 @@ if(isset($_POST['submit_activity']) && $_SERVER['REQUEST_METHOD'] === "POST"){
 }
 
 if(isset($_POST['post']) && $_SERVER['REQUEST_METHOD'] === 'POST'){
-    $postType = $_POST['post_type'] ?? '';
+    $postData = [
+        'username' => $_SESSION['userData']['username'],
+        'class_code' => $classCode,
+        'post_type' => $_POST['post_type'] ?? '',
+        'file' => $_FILES['file'] ?? '',
+        'post_title' => $_POST['post_title'] ?? '',
+        'post_description' => $_POST['post_description'] ?? ''
+    ];
 
-    switch($postType){
-        case 'post_material':
-            $postData = [
-                'username' => $_SESSION['userData']['username'],
-                'class_code' => $classCode,
-                'post_type' => $_POST['post_type'] ?? '',
-                'file' => $_FILES['file'] ?? '',
-                'post_title' => $_POST['post_title'] ?? '',
-                'post_description' => $_POST['post_description'] ?? ''
-            ];
+    $result = $ClassController->createPost($postData);
 
-            $result = $ClassController->createPost($postData);
-
-            if(!$result['success']){
-                $_SESSION['toast'] = [
-                    'type' => 'error',
-                    'message' => implode(', ', $result['message'])
-                ];
-            }else{
-                $_SESSION['toast'] = [
-                    'type' => 'success',
-                    'message' => 'Upload Success'
-                ];
-            }
-            break;
-
-        case 'announcement':
-            break;
-            
-        default:
-            $_SESSION['toast'] = [
-                'type' => 'error',
-                'message' => 'failed to upload'
-            ];
+    if(!$result['success']){
+        $_SESSION['toast'] = [
+            'type' => 'error',
+            'message' => implode(', ', $result['message'])
+        ];
+    }else{
+        $_SESSION['toast'] = [
+            'type' => 'success',
+            'message' => 'Upload Success'
+        ];
     }
 
     header('Location: ' . $_SERVER['PHP_SELF'] . "?class_code={$classCode}");
@@ -262,7 +248,6 @@ try{
                                                     </div>
                                                 <?php endif; ?>
 
-                                                <!-- YOUR ORIGINAL CODE (UNCHANGED) -->
                                                 <div class="d-flex align-items-center gap-3 mb-3">
                                                     <img src="https://ui-avatars.com/api/?name=<?php echo $post['author'] ?>&background=0d6efd&color=fff" class="rounded-circle" width="45">
                                                     <div>
@@ -433,7 +418,7 @@ try{
                                 <h4>Classwork Content</h4>
                                 <p class="text-muted">Assignments and materials will appear here.</p>
                             </div>
-                        <?php else: ?>         
+                        <?php else: ?>       
                             <?php foreach($getAct['class_post'] as $post): ?>
                                 <div class="card border-0 shadow-sm mb-3">
                                     <div class="card-body p-4 position-relative">
@@ -469,6 +454,7 @@ try{
                                                 <?php
                                                     $dueDate = strtotime($post['due_date']);
                                                     $isToday = date('Y-m-d', $dueDate) === date('Y-m-d');
+                                                    $checkIfLate = date('Y-m-d', $dueDate) < date('Y-m-d H:i:s');
                                                 ?>
 
                                                 <small class="<?php echo $isToday ? 'text-danger fw-bold' : 'fw-bold text-muted'; ?>">
@@ -490,10 +476,11 @@ try{
                                                 </span>
 
                                                 <form action="<?php echo $_SERVER['PHP_SELF'] . '?class_code=' . $classCode ?>" method="POST">
+                                        
                                                     <button class="btn btn-primary rounded-pill px-4 fw-semibold shadow-sm submitActivity" value="<?php echo $post['activity_id'] ?>"
                                                             name="submit_user_activity">
                                                         <i class="bi bi-upload me-2"></i>
-                                                        Submit Activity
+                                                        <?php echo $checkIfLate ? 'Submit Late Bro' : 'Submit Activity' ?>
                                                     </button>                                                    
                                                 </form>
 
@@ -650,6 +637,8 @@ try{
                     
                         <!-- Editor Section -->
                         <div class="rounded-top bg-light p-3 border-bottom border-secondary-subtle" id="editor_section">
+                            <label for="material_title">Title: </label>
+                            <input type="text" name="post_title" id="post_title" class="bg-light p-2 rounded-pill px-3 text-muted border" placeholder="title here...">                             
                             <textarea class="form-control border-0 bg-transparent shadow-none" 
                                 rows="5" 
                                 name="announcement"
@@ -672,7 +661,7 @@ try{
                                     accept=".pdf,.docx,.jpg,.jpeg" 
                                     id="fileInput" 
                                     hidden multiple
-                                    disabled>
+                                    >
                                 <button class="btn btn-outline-secondary rounded-circle border-light-subtle circle-icon"><i class="bi bi-link-45deg"></i></button>
                             </div>
                             

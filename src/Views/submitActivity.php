@@ -156,6 +156,7 @@ if(isset($_POST['submit_activity_answer']) && $_SERVER['REQUEST_METHOD'] === 'PO
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="../../Assets/JavaScript/submitActivity.js"></script>
+    
     <?php if (isset($_SESSION['toast'])): ?>
         <div class="position-fixed start-50 translate-middle-x" style="top: 30%; z-index: 11;">
             <div id="myToast" class="toast message <?php echo $_SESSION['toast']['type']; ?> border-0">

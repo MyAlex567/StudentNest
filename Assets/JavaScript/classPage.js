@@ -88,6 +88,8 @@ document.addEventListener('DOMContentLoaded', function(){
         
         if(this.value === 'post_announcement'){
             editor_section.innerHTML = `
+                <label for="material_title">Title: </label>
+                <input type="text" name="post_title" id="post_title" class="bg-light p-2 rounded-pill px-3 text-muted border" placeholder="title here...">            
                 <textarea class="form-control border-0 bg-transparent shadow-none" 
                     rows="5"
                     name="announcement"

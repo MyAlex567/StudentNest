@@ -5,6 +5,30 @@ class Validator{
     private static $errors = [];
 
     /**
+     * Validate the input grade
+     */
+    public static function validateGrade($grade) {
+        if($grade === '' || $grade === null) {
+            self::$errors[] = "Grade is required.";
+            return false;
+        }
+
+        if(!is_numeric($grade)) {
+            self::$errors[] = "Grade must be a number.";
+            return false;
+        }
+
+        $grade = (float) $grade;
+
+        if($grade < 0 || $grade > 100) {
+            self::$errors[] = "Grade must be between 0 and 100.";
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
      * Validate Post Id
      */
     public static function validatePostId($id) {
@@ -174,6 +198,28 @@ class Validator{
         return true;
     }
 
+    /**
+     * Validate Submission Id
+     */
+    public static function validateId($id)
+    {
+        if (empty($id)) {
+            self::$errors[] = "ID is required";
+            return false;
+        }
+
+        if (!filter_var($id, FILTER_VALIDATE_INT)) {
+            self::$errors[] = "ID must be a valid number";
+            return false;
+        }
+
+        if ((int)$id <= 0) {
+            self::$errors[] = "ID must be greater than 0";
+            return false;
+        }
+
+        return true;
+    }
 
     /**
      * Validate username
