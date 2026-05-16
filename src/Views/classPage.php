@@ -23,6 +23,7 @@ $class_post_details = [];
 $classRole = '';
 $classPost = [];
 $classActivity = [];
+$getAct = [];
 
 if (!$classResult['success'] && empty($_SESSION['userData'])) {
     ?>
@@ -43,6 +44,12 @@ if (!$classResult['success'] && empty($_SESSION['userData'])) {
             <i class="bi bi-code-slash position-absolute" style="right: 20px; bottom: -20px; font-size: 120px; opacity: 0.1;"></i>
         </div>
     <?php
+    exit;
+}
+
+if(isset($_POST['submit_user_activity']) && $_SERVER['REQUEST_METHOD'] === 'POST'){
+    $_SESSION['activity_id'] = $_POST['submit_user_activity'];
+    header('Location: '. './submitActivity.php');
     exit;
 }
 
@@ -124,10 +131,6 @@ try{
 
     $isSuccess = $ClassController->getPost($classCode);
     $getAct = $ClassController->getActivityPost($classCode);
-
-    if($getAct['success']){
-        $getAct = $getAct['class_post'];
-    }
     
     if($isSuccess['success']){
         $classPost = $isSuccess['class_post'];
@@ -237,25 +240,27 @@ try{
                                         <div class="card border-0 shadow-sm mb-3">
                                             <div class="card-body p-4 position-relative">
 
-                                                <div class="dropdown position-absolute top-0 end-0 m-3">
-                                                    <form action="<?php echo $_SERVER['PHP_SELF'] . '?class_code=' . $classCode ?>" method="POST">
+                                                <?php if($classRole === 'teacher'): ?>
+                                                    <div class="dropdown position-absolute top-0 end-0 m-3">
+                                                        <form action="<?php echo $_SERVER['PHP_SELF'] . '?class_code=' . $classCode ?>" method="POST">
 
-                                                        <button class="btn btn-link text-dark p-0" type="button" data-bs-toggle="dropdown">
-                                                            <i class="bi bi-three-dots-vertical fs-5"></i>
-                                                        </button>
+                                                            <button class="btn btn-link text-dark p-0" type="button" data-bs-toggle="dropdown">
+                                                                <i class="bi bi-three-dots-vertical fs-5"></i>
+                                                            </button>
 
-                                                        <ul class="dropdown-menu dropdown-menu-end">
-                                                            <li>
-                                                                <a class="dropdown-item text-danger"
-                                                                href="#"
-                                                                data-bs-toggle="modal"
-                                                                data-bs-target="#deletePostModal<?php echo $post['post_id']; ?>">
-                                                                    Delete
-                                                                </a>
-                                                            </li>
-                                                        </ul>
-                                                    </form>
-                                                </div>
+                                                            <ul class="dropdown-menu dropdown-menu-end">
+                                                                <li>
+                                                                    <a class="dropdown-item text-danger"
+                                                                    href="#"
+                                                                    data-bs-toggle="modal"
+                                                                    data-bs-target="#deletePostModal<?php echo $post['post_id']; ?>">
+                                                                        Delete
+                                                                    </a>
+                                                                </li>
+                                                            </ul>
+                                                        </form>
+                                                    </div>
+                                                <?php endif; ?>
 
                                                 <!-- YOUR ORIGINAL CODE (UNCHANGED) -->
                                                 <div class="d-flex align-items-center gap-3 mb-3">
@@ -422,8 +427,14 @@ try{
                         </div>
 
 
-                        <?php if(!empty($getAct)): ?>
-                            <?php foreach($getAct as $post): ?>
+                        <?php if(!$getAct['success']): ?>
+                            <div class="card border-0 shadow-sm p-5 text-center">
+                                <i class="bi bi-journal-text display-1 text-muted mb-3"></i>
+                                <h4>Classwork Content</h4>
+                                <p class="text-muted">Assignments and materials will appear here.</p>
+                            </div>
+                        <?php else: ?>         
+                            <?php foreach($getAct['class_post'] as $post): ?>
                                 <div class="card border-0 shadow-sm mb-3">
                                     <div class="card-body p-4 position-relative">
 
@@ -455,50 +466,53 @@ try{
                                                     Due Date
                                                 </h6>
 
-                                                <small class="text-muted">
-                                                    <?php echo date('F d, Y h:i A', strtotime($post['due_date'])); ?>
+                                                <?php
+                                                    $dueDate = strtotime($post['due_date']);
+                                                    $isToday = date('Y-m-d', $dueDate) === date('Y-m-d');
+                                                ?>
+
+                                                <small class="<?php echo $isToday ? 'text-danger fw-bold' : 'fw-bold text-muted'; ?>">
+                                                    <?php
+                                                        echo $isToday
+                                                            ? 'Due Today • ' . date('h:i A', $dueDate)
+                                                            : 'Due • ' .date('F d, Y h:i A', $dueDate);
+                                                    ?>
                                                 </small>
                                             </div>
 
                                         </div>
 
-                                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+                                        <?php if($classRole === 'student'): ?>
+                                            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
 
-                                            <span class="badge <?php echo $post['post_type'] === 'material' ? 'bg-dark' : 'bg-danger'; ?>">
-                                                <?php echo ucfirst($post['post_type']); ?>
-                                            </span>
+                                                <span class="badge <?php echo $post['post_type'] === 'material' ? 'bg-dark' : 'bg-danger'; ?>">
+                                                    <?php echo ucfirst($post['post_type']); ?>
+                                                </span>
 
-                                            <form action="<?php echo $_SERVER['PHP_SELF'] . '?class_code=' . $classCode ?>" method="POST">
+                                                <form action="<?php echo $_SERVER['PHP_SELF'] . '?class_code=' . $classCode ?>" method="POST">
+                                                    <button class="btn btn-primary rounded-pill px-4 fw-semibold shadow-sm submitActivity" value="<?php echo $post['activity_id'] ?>"
+                                                            name="submit_user_activity">
+                                                        <i class="bi bi-upload me-2"></i>
+                                                        Submit Activity
+                                                    </button>                                                    
+                                                </form>
 
-                                                <button type="submit"
-                                                        class="btn btn-primary rounded-pill px-4 fw-semibold shadow-sm">
 
-                                                    <i class="bi bi-upload me-2"></i>
-                                                    Submit Activity
+                                            </div>
+                                        <?php endif; ?>
 
-                                                </button>
-
-                                            </form>
-
-                                        </div>
+                                        <h4><?php echo $post['title'] ?></h4>
 
                                         <p class="card-text mb-0">
                                             <?php echo $post['description'] ?>
                                         </p>
 
                                     </div>
-                                </div>
-
-
-
-                            <?php endforeach; ?>
-                        <?php else: ?>         
-                            <div class="card border-0 shadow-sm p-5 text-center">
-                                <i class="bi bi-journal-text display-1 text-muted mb-3"></i>
-                                <h4>Classwork Content</h4>
-                                <p class="text-muted">Assignments and materials will appear here.</p>
-                            </div>
+                                </div>            
+                                                                                    
+                            <?php endforeach; ?>                                                        
                         <?php endif; ?>
+                        
                     </div>
 
                     <!-- People Tab Placeholder -->

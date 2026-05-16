@@ -239,7 +239,10 @@ class ClassController{
         }
 
         if(!Validator::validateDueDate($postInfo['due_date'])){
-
+            return [
+                'success' => false,
+                'message' => Validator::getErrors()
+            ];  
         }
 
         if(!Validator::validateTitle($postInfo['activity_title'])){
@@ -344,10 +347,14 @@ class ClassController{
 
         // Deleting file in folder
         $paths = $this->model->getFilePaths($sanitized);
+        $paths2 = $this->model->getSubmissionFile($sanitized);
+
+        if($paths2){
+            $this->storage->deleteFile($paths2);
+        }
+
         if($paths){
-
             $deleteFile = $this->storage->deleteFile($paths);
-
         }
         $result = $this->model->deletePost($sanitized);
         // Deleting data in database
@@ -393,6 +400,34 @@ class ClassController{
     
     }
 
+    public function getTobeGraded($username){
+        Validator::clearErrors();
+
+        if(!Validator::validateUsername($username)){
+            return [
+                'success' => false,
+                'message' => Validator::getErrors()
+            ];
+        }
+
+        $username = Sanitizer::sanitizeUsername($username);
+
+        $result = $this->model->getTobeGradedAt($username);
+
+        if($result){
+            return [
+                'success' => true,
+                'message' => 'Success Ngani',
+                'data' => $result
+            ];
+        }else{
+            return [
+                'success' => false,
+                'message' => 'Nag fail'
+            ];
+        }
+    }
+
     public function getPost($classCode){
         Validator::clearErrors();
 
@@ -418,6 +453,55 @@ class ClassController{
                 'message' => 'No post found'
             ];
         }
+    }
+
+
+    
+    public function submitActivity($submissionData){
+        Validator::clearErrors();
+
+        if(!Validator::validateUsername($submissionData['username'])){
+            return [
+                'success' => false,
+                'message' => Validator::getErrors()
+            ];
+        }
+
+        if(!Validator::validateDescription($submissionData['answer_text'])){
+            return [
+                'success' => false,
+                'message' => Validator::getErrors()
+            ];
+        }
+
+        $submissionData['username'] = Sanitizer::sanitizeUsername($submissionData['username']);
+
+        $due =  $this->model->getDueDate($submissionData['activity_id']);
+        $status = '';
+
+        if($due){
+            $status = ( strtotime($submissionData['submitted_at']) > strtotime($due['due_date']) ) ? 'late' : 'submitted';
+        }
+
+        $folderUpload = [];
+        if(!empty($submissionData['submission_file'])){
+            $folderUpload = $this->storage->store($submissionData['username'], $submissionData['post_type'], $submissionData['submission_file']);
+        }
+
+        $result = $this->model->submission($submissionData, $status, $folderUpload);
+        
+        if($result){
+            return [
+                'success' => true,
+                'message' => $status === 'late' ? 'Submitted late': 'Submitted Complete'
+            ];
+        }else{
+            return [
+                'success' => false,
+                'message' => 'Error bOi'
+            ];
+        }
+        
     }
 }
 

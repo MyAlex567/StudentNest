@@ -26,7 +26,6 @@ class UserApi{
 
     public function handleRequest(){
         header('Content-Type: application/json');
-
         header('Access-Control-Allow-Origin: *');
         header('Access-Control-Allow-Methods: POST, OPTIONS');
         header('Access-Control-Allow-Headers: Content-Type');
@@ -48,6 +47,9 @@ class UserApi{
         
 
         switch($action){
+            case 'get-To-be-graded':
+                $this->getToBeGraded();
+                break;
             case 'check-username':
                 $this->check_username_availability();
                 break;
@@ -179,6 +181,26 @@ class UserApi{
         echo json_encode([
             'success' => $isSuccessDeleting['success'],
             'message' => $isSuccessDeleting['message']
+        ]);
+    }
+
+    private function getToBeGraded(){
+        $username = $_SESSION['userData']['username'];
+
+        $result = $this->classController->getTobeGraded($username);
+
+        if(!$result['success']){
+            echo json_encode([
+                'success' => false,
+                'message' => 'No Data Found',
+                'error' => $result['message']
+            ]);
+            return;   
+        }
+
+        echo json_encode([
+            'success' => true,
+            'data' => $result['data']
         ]);
     }
 

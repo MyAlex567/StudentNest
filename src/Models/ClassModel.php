@@ -62,7 +62,7 @@ class ClassModel{
                 'created_by' => $createdby['account_id'],
                 'post_type' => $postInfo['post_type'] === 'post_activity' ? 'activity' : '',
                 'title' => $postInfo['activity_title'],
-                'description' => $postInfo['activity_description'] === '' ? $postInfo['activity_description'] : 'No Available Description'
+                'description' => trim($postInfo['activity_description']) === '' ? 'No available Description For this Activity' : $postInfo['activity_description']
             ]);
 
             // get the last inserted id which is the post
@@ -157,10 +157,56 @@ class ClassModel{
 
     }
 
+    public function getSubmissionData($submissionId){
+        $sql = "SELECT
+                    s.submission_id,
+                    s.activity_id,
+                    s.submitted_by,
+                    s.graded_by,
+                    s.answer_text,
+                    s.grade,
+                    s.status,
+                    s.submitted_at,
+                    s.graded_at,
+                    CONCAT(u.first_name, ' ', u.last_name) AS submitted_by_name
+                FROM activity act
+                INNER JOIN submission s ON act.activity_id = s.activity_id
+                INNER JOIN user u ON u.account_id = s.submitted_by
+                WHERE s.submission_id = :submission_id;";
+    }
+
+    public function getTobeGradedAt($username){
+        $sql = "SELECT
+                    s.submission_id,
+                    s.activity_id,
+                    s.submitted_by,
+                    s.graded_by,
+                    s.answer_text,
+                    s.grade,
+                    s.status,
+                    s.submitted_at,
+                    s.graded_at,
+                    p.title,
+                    p.description,
+                    CONCAT(u.first_name, ' ', u.last_name) AS submitted_by_name
+                FROM post p
+                INNER JOIN activity act ON act.post_id = p.post_id
+                INNER JOIN submission s ON s.activity_id = act.activity_id
+                INNER JOIN user u ON u.account_id = s.submitted_by
+                WHERE p.created_by = (SELECT account_id FROM account WHERE username = :username)";  
+        $stmt = $this->conn->prepare($sql);
+        $stmt->execute([
+            'username' => $username
+        ]);
+
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
     public function getClassActivity($classCode){
         try{
             $sql = "SELECT
                         p.post_id,
+                        act.activity_id,
                         p.created_by,
                         p.post_type,
                         p.post_date,
@@ -434,6 +480,19 @@ class ClassModel{
         }
     }
 
+    public function getSubmissionFile($postID){
+        $sql = "SELECT sf.file_path FROM activity act
+                INNER JOIN submission s ON act.activity_id = s.activity_id
+                INNER JOIN submission_file sf ON s.submission_id = sf.submission_id
+                WHERE act.post_id = :post_id";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->execute([
+            'post_id' => $postID
+        ]);
+
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
     public function getFilePaths($postID){
         try{
             $sql = "SELECT file_path FROM attachment WHERE post_id = :post_id";
@@ -454,6 +513,54 @@ class ClassModel{
         $stmt->execute(['class_code' => $classCode]);
 
         return $stmt->fetch(\PDO::FETCH_ASSOC);
+    }
+
+    public function getDueDate($activityId){
+        $sql = "SELECT due_date FROM activity WHERE activity_id = :activity_id";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->execute([
+            'activity_id' => $activityId
+        ]);
+
+        return $stmt->fetch(\PDO::FETCH_ASSOC);
+    }
+
+    public function submission($submissionData, $status, $filePaths){
+        try{
+            $this->conn->beginTransaction();
+            $sql = "INSERT INTO submission (activity_id, submitted_by, answer_text, status) VALUES
+                    (:activity_id, (SELECT account_id FROM account WHERE username = :username), :answer_text, :status)";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute([
+                "activity_id" => $submissionData['activity_id'],
+                'username' => $submissionData['username'],
+                'answer_text' => $submissionData['answer_text'],
+                'status' => $status
+            ]);            
+
+            $lastinsertedId = $this->conn->lastInsertId();
+
+            // Loop for insertion in data base
+            foreach($filePaths['path'] as $file){
+
+                $sql3 = "INSERT INTO submission_file(submission_id, file_path, file_name)
+                        VALUES (:submission_id, :file_path, :file_name)";
+                $stmt3 = $this->conn->prepare($sql3);
+                $stmt3->execute([
+                    "submission_id" => $lastinsertedId,
+                    'file_path' => $file['file_path'],
+                    'file_name' => $file['file_name'],
+                ]);
+            }   
+            $this->conn->commit();
+            return $lastinsertedId;
+        }catch(\PDOException $error){
+            if ($this->conn->inTransaction()) {
+                $this->conn->rollBack();
+            }
+            return false;
+        }
+        
     }
 }
 

@@ -135,10 +135,9 @@ document.addEventListener('DOMContentLoaded', function(){
                     window.location.href = `./classPage.php?class_code=${this.dataset.classCode}`;
                 }
             }).catch(error => {
-                // console.error('Error:', error);
-                // emailStatus.textContent = 'Error checking email. Please try again.';
-                // emailStatus.className = 'email-status unavailable';
+
             });
         });
     });
+
 });
