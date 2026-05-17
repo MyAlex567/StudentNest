@@ -313,7 +313,7 @@ if(isset($_POST['logout']) && $_SERVER['REQUEST_METHOD'] === 'POST'){
         <div class="px-4">
             <div class="card p-5 mb-4 bg-white border">
                 <h2 class="fw-bold">Welcome Back 👋, <?php echo $userData['username'] ?? 'Unknown' ?></h2>
-                <p class="text-muted">Labels are now restored for mobile, while keeping the mini-sidebar for desktop!</p>
+                <p class="text-muted">Welcome to our MVP LMS!</p>
             </div>
 
             <div class="row g-4 mb-4">

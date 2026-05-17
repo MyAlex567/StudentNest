@@ -49,6 +49,18 @@ class Validator{
     }
 
     /**
+     * validate checkbox can submit
+     */
+    public static function validateCheckbox($value){
+        if($value !== 1 && $value !== 0 && $value !== '1' && $value !== '0'){
+            self::$errors[] = "Invalid checkbox value";
+            return false;
+        }
+
+        return true;
+    }    
+
+    /**
      * Validate description
      */
     public static function validateDescription($description){

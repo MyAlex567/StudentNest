@@ -26,6 +26,33 @@ $classPost = [];
 $classActivity = [];
 $getAct = [];
 
+if(isset($_POST['updateCanSubmit']) && $_SERVER['REQUEST_METHOD'] === 'POST'){
+    $details = [
+        'username' => $_SESSION['userData']['username'],
+        'activity_id' => $_POST['activity_id'],
+        'can_submit' => isset($_POST['can_submit']) ? 1 : 0,
+        'post_id' => $_POST['post_id']
+    ];
+
+    $result = $ClassController->updateCanSubmit($details);
+
+    if($result['success']){
+        $_SESSION['toast'] = [
+            'type' => 'success',
+            'message' => $result['message']
+        ];
+    }else{
+        $_SESSION['toast'] = [
+            'type' => 'error',
+            'message' => implode(', ', $result['message'])
+        ];        
+    }
+
+    header('Location: ' . $_SERVER['PHP_SELF'] . "?class_code={$classCode}");
+    exit();
+    
+}
+
 if (!$classResult['success'] && empty($_SESSION['userData'])) {
     ?>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -464,6 +491,7 @@ try{
                                                             : 'Due • ' .date('F d, Y h:i A', $dueDate);
                                                     ?>
                                                 </small>
+                                                                                                                                             
                                             </div>
 
                                         </div>
@@ -475,15 +503,21 @@ try{
                                                     <?php echo ucfirst($post['post_type']); ?>
                                                 </span>
 
-                                                <form action="<?php echo $_SERVER['PHP_SELF'] . '?class_code=' . $classCode ?>" method="POST">
-                                        
-                                                    <button class="btn btn-primary rounded-pill px-4 fw-semibold shadow-sm submitActivity" value="<?php echo $post['activity_id'] ?>"
-                                                            name="submit_user_activity">
-                                                        <i class="bi bi-upload me-2"></i>
-                                                        <?php echo $checkIfLate ? 'Submit Late Bro' : 'Submit Activity' ?>
-                                                    </button>                                                    
-                                                </form>
-
+                                                <?php if($post['can_submit']): ?>
+                                                    <form action="<?php echo $_SERVER['PHP_SELF'] . '?class_code=' . $classCode ?>" method="POST">
+                                                        <button class="btn btn-primary rounded-pill px-4 fw-semibold shadow-sm submitActivity" value="<?php echo $post['activity_id'] ?>"
+                                                                name="submit_user_activity">
+                                                            <i class="bi bi-upload me-2"></i>
+                                                            <?php echo $checkIfLate ? 'Submit Late Bro' : 'Submit Activity' ?>
+                                                        </button>                                                    
+                                                    </form>
+                                                <?php else: ?>
+                                                        <span 
+                                                            class="btn btn-secondary rounded-pill px-4 fw-semibold shadow-sm">
+                                                            <i class="bi bi-lock-fill me-2"></i>
+                                                            Submission Closed
+                                                        </span>
+                                                <?php endif; ?>
 
                                             </div>
                                         <?php endif; ?>
@@ -494,6 +528,33 @@ try{
                                             <?php echo $post['description'] ?>
                                         </p>
 
+                                        <?php if($classRole === 'teacher'): ?>
+                                            <!-- Control if the activity are still accepting activitys -->
+                                            <form action="<?php echo $_SERVER['PHP_SELF'] . '?class_code=' . $classCode ?>" method="POST">
+                                                <input type="hidden" name="activity_id" value="<?php echo $post['activity_id']; ?>">
+                                                <input type="hidden" name="post_id" value="<?php echo $post['post_id']; ?>">
+
+                                                <div class="form-check form-switch mb-3">
+                                                    <input 
+                                                        class="form-check-input" 
+                                                        type="checkbox" 
+                                                        role="switch"
+                                                        id="canSubmitSwitch"
+                                                        name="can_submit"
+                                                        value="1"
+                                                        <?php echo $post['can_submit'] == 1 ? 'checked' : ''; ?>
+                                                    >
+
+                                                    <label class="form-check-label fw-semibold" for="canSubmitSwitch">
+                                                        Allow students to submit
+                                                    </label>
+                                                </div>
+
+                                                <button type="submit" name="updateCanSubmit" class="btn btn-dark rounded-pill px-4">
+                                                    Save
+                                                </button>
+                                            </form>                                            
+                                        <?php endif; ?>
                                     </div>
                                 </div>            
                                                                                     

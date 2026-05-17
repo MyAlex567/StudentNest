@@ -69,9 +69,49 @@ class ClassModel{
     }    
 
     /**
+     * Update if students can still submit an activity.
+     *
+     * @param array $details Activity submit status details.
+     * @return bool True if updated, false otherwise.
+     *
+     * @author lisayAlex <202401-00307@dwc-legazpi.edu>
+     * @since 2026-05-17
+     */
+    public function updateCanSubmit(array $details): bool
+    {
+        try{
+            $sql = "SELECT 1 FROM post WHERE created_by = (SELECT account_id FROM account WHERE username = :username) AND post_id = :post_id";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute([
+                'username' => $details['username'],
+                'post_id' => $details['post_id']
+            ]);
+
+            $result = $stmt->fetchColumn();
+
+            if($result){
+                $sql = "UPDATE activity SET can_submit = :can_submit WHERE activity_id = :activity_id";
+                $stmt = $this->conn->prepare($sql);
+                $result = $stmt->execute([
+                    'activity_id' => $details['activity_id'],
+                    'can_submit' => $details['can_submit']
+                ]);
+
+                if($result){
+                    return true;
+                }
+                return false;
+            }
+            return false;
+        }catch(\PDOException){
+            return false;
+        }
+    }
+
+    /**
      * Store a material record linked to a post.
      *
-     * @param mixed $postID ID of the post connected to the material.
+     * @param mixed $postID ID of the post connected to the materia
      * @return string|false Last inserted material ID, or false on failure.
      *
      * @author lisayAlex <202401-00307@dwc-legazpi.edu>
@@ -352,6 +392,7 @@ class ClassModel{
             $sql = "SELECT
                         p.post_id,
                         act.activity_id,
+                        act.can_submit,
                         p.created_by,
                         p.post_type,
                         p.post_date,

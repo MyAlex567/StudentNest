@@ -3,6 +3,10 @@ namespace App\Helpers;
 
 class Sanitizer{
 
+    public static function sanitizeCheckbox($value){
+        return ($value == 1 || $value === '1') ? 1 : 0;
+    }
+
     public static function sanitizePostId($id) {
         return trim((string) $id);
     }

@@ -15,6 +15,52 @@ class ClassController{
         $this->storage = new FileStorageHelper();
     }
 
+    public function updateCanSubmit($details){
+        Validator::clearErrors();
+
+        if(!Validator::validateUsername($details['username'])){
+            return [
+                'success' => false,
+                'message' => Validator::getErrors()
+            ];
+        }
+
+        if(!Validator::validateId($details['activity_id']) || !Validator::validateId($details['post_id'])){
+            return [
+                'success' => false,
+                'message' => Validator::getErrors()
+            ];
+        }
+
+        if(!Validator::validateCheckbox($details['can_submit'])){
+            return [
+                'success' => false,
+                'message' => Validator::getErrors()
+            ];            
+        }
+
+        $details = [
+            'username' => Sanitizer::sanitizeUsername($details['username']),
+            'activity_id' => Sanitizer::sanitizeId($details['activity_id']),
+            'post_id' => Sanitizer::sanitizeId($details['post_id']),
+            'can_submit' => Sanitizer::sanitizeCheckbox($details['can_submit'])
+        ];
+
+        $result = $this->model->updateCanSubmit($details);
+
+        if($result){
+            return [
+                'success' => true,
+                'message' => 'Update success'
+            ];
+        }
+
+        return [
+            'success' => false,
+            'message' => 'Failed to update'
+        ];
+    }
+
     public function store($data){
         Validator::clearErrors();
 
