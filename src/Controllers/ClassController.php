@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 namespace App\Controllers;
 
 use App\Helpers\Sanitizer;
@@ -6,16 +8,47 @@ use App\Helpers\Validator;
 use App\Helpers\FileStorageHelper;
 use App\Models\ClassModel;
 
+/**
+ * Handles class-related actions such as creating classes, joining classes,
+ * creating posts and activities, submitting activities, and grading submissions.
+ *
+ * @package App\Controllers
+ * @author lisayAlex <202401-00307@dwc-legazpi.edu>
+ * @since 2026-05-17
+ */
 class ClassController{
+    /**
+     * Class model instance used for database operations.
+     *
+     * @var ClassModel
+     */
     private $model;
+
+    /**
+     * File storage helper instance used for storing and deleting uploaded files.
+     *
+     * @var FileStorageHelper
+     */
     private $storage;
 
+    /**
+     * Initialize the class controller with the class model and file storage helper.
+     *
+     * @param ClassModel $model The class model instance.
+     */
     public function __construct(ClassModel $model){
         $this->model = $model;
         $this->storage = new FileStorageHelper();
     }
 
-    public function updateCanSubmit($details){
+    /**
+     * Update whether a student can submit an activity.
+     *
+     * @param array $details The submission permission details.
+     *
+     * @return array Returns the update result message.
+     */
+    public function updateCanSubmit($details): array{
         Validator::clearErrors();
 
         if(!Validator::validateUsername($details['username'])){
@@ -61,7 +94,14 @@ class ClassController{
         ];
     }
 
-    public function store($data){
+    /**
+     * Store a new class after validating and sanitizing class information.
+     *
+     * @param array $data The class information.
+     *
+     * @return array Returns the class creation result message.
+     */
+    public function store($data): array{
         Validator::clearErrors();
 
         $fieldtypes = [
@@ -125,7 +165,14 @@ class ClassController{
 
     }
 
-    public function join($classCode){
+    /**
+     * Join a class using a class code.
+     *
+     * @param string $classCode The class code to join.
+     *
+     * @return array Returns the join class result message.
+     */
+    public function join($classCode): array{
         Validator::clearErrors();
 
         if(!Validator::validateClassCode($classCode)){
@@ -152,7 +199,14 @@ class ClassController{
         }
     }
 
-    public function getClassRole($userClassInfo){
+    /**
+     * Get the role of a user inside a specific class.
+     *
+     * @param array $userClassInfo The user and class code information.
+     *
+     * @return array Returns the class role result.
+     */
+    public function getClassRole($userClassInfo): array{
         Validator::clearErrors();
 
         if(!Validator::validateUsername($userClassInfo['username'])){
@@ -187,7 +241,14 @@ class ClassController{
 
     }
 
-    public function getUserClasses($username){
+    /**
+     * Get all classes connected to a specific user.
+     *
+     * @param string $username The username of the user.
+     *
+     * @return array|false Returns the user classes, validation error, or false from the model.
+     */
+    public function getUserClasses($username): array|false{
         Validator::clearErrors();
 
         if(!Validator::validateUsername($username)){
@@ -205,7 +266,14 @@ class ClassController{
     }
 
     // Get class data by class code
-    public function getClassData($classCode){
+    /**
+     * Get class data by class code.
+     *
+     * @param string $classCode The class code.
+     *
+     * @return array Returns the class data result.
+     */
+    public function getClassData($classCode): array{
         Validator::clearErrors();
 
         if(!Validator::validateClassCode($classCode)){
@@ -233,7 +301,14 @@ class ClassController{
     }
 
     // Select All members of the class
-    public function selectAllClass($classCode){
+    /**
+     * Select all members of a class using the class code.
+     *
+     * @param string $classCode The class code.
+     *
+     * @return array Returns the class members result.
+     */
+    public function selectAllClass($classCode): array{
         Validator::clearErrors();
 
         if(!Validator::validateClassCode($classCode)){
@@ -260,7 +335,14 @@ class ClassController{
         }
     }
 
-    public function createActivity($postInfo){
+    /**
+     * Create an activity post with optional uploaded activity files.
+     *
+     * @param array $postInfo The activity post information.
+     *
+     * @return array Returns the activity creation result message.
+     */
+    public function createActivity($postInfo): array{
         Validator::clearErrors();
 
         if(!Validator::validateUsername($postInfo['username'])){
@@ -323,7 +405,14 @@ class ClassController{
 
     }
 
-    public function createPost($postInfo){
+    /**
+     * Create a regular class post with optional uploaded files.
+     *
+     * @param array $postInfo The class post information.
+     *
+     * @return array Returns the post creation result and upload result.
+     */
+    public function createPost($postInfo): array{
         Validator::clearErrors();
 
         if(!Validator::validateClassCode($postInfo['class_code'])){
@@ -378,7 +467,14 @@ class ClassController{
         
     }
 
-    public function deletePost($postId){
+    /**
+     * Delete a class post and its related uploaded files.
+     *
+     * @param int|string $postId The post ID to delete.
+     *
+     * @return array Returns the delete result message.
+     */
+    public function deletePost($postId): array{
         Validator::clearErrors();
 
         if(!Validator::validatePostId($postId)){
@@ -418,7 +514,14 @@ class ClassController{
         ];
     }
 
-    public function getActivityPost($classCode){
+    /**
+     * Get all activity posts for a class.
+     *
+     * @param string $classCode The class code.
+     *
+     * @return array Returns the activity posts result.
+     */
+    public function getActivityPost($classCode): array{
         Validator::clearErrors();
 
         if(!Validator::validateClassCode($classCode)){
@@ -446,7 +549,14 @@ class ClassController{
     
     }
 
-    public function getTobeGraded($username){
+    /**
+     * Get submissions that need to be graded for a specific user.
+     *
+     * @param string $username The username of the user.
+     *
+     * @return array Returns the to-be-graded submissions result.
+     */
+    public function getTobeGraded($username): array{
         Validator::clearErrors();
 
         if(!Validator::validateUsername($username)){
@@ -474,7 +584,14 @@ class ClassController{
         }
     }
 
-    public function getPost($classCode){
+    /**
+     * Get all regular class posts for a class.
+     *
+     * @param string $classCode The class code.
+     *
+     * @return array Returns the class posts result.
+     */
+    public function getPost($classCode): array{
         Validator::clearErrors();
 
         if(!Validator::validateClassCode($classCode)){
@@ -503,9 +620,13 @@ class ClassController{
 
 
     /**
-     * Get submission file by id
+     * Get submission file paths by submission ID.
+     *
+     * @param int|string $subId The submission ID.
+     *
+     * @return array Returns the submission file paths result.
      */
-    public function getSubmissionFilePaths($subId){
+    public function getSubmissionFilePaths($subId): array{
         Validator::clearErrors();
 
         if(!Validator::validateId($subId)){
@@ -531,7 +652,14 @@ class ClassController{
         ];
     }
 
-    public function submitGrade($grade_details){
+    /**
+     * Submit a grade for a student submission.
+     *
+     * @param array $grade_details The grade details.
+     *
+     * @return array Returns the grading result message.
+     */
+    public function submitGrade($grade_details): array{
         Validator::clearErrors();
 
         if(!Validator::validateId($grade_details['submission_id'])){
@@ -576,7 +704,14 @@ class ClassController{
         ];
     }
 
-    public function getSubmissiondata($submissionId){
+    /**
+     * Get submission data by submission ID.
+     *
+     * @param int|string $submissionId The submission ID.
+     *
+     * @return array Returns the submission data result.
+     */
+    public function getSubmissiondata($submissionId): array{
         Validator::clearErrors();
 
         if(!Validator::validateId($submissionId)){
@@ -601,8 +736,149 @@ class ClassController{
             'success' => false
         ];
     }
+
+    /**
+     * Allows a student to leave a class.
+     *
+     * @param array $userData Contains username, class_role, and class_code.
+     * @return array Result status and message.
+     */
+    public function leaveClass($userData): array{
+        Validator::clearErrors();
+
+        if(!Validator::validateUsername($userData['username'])){
+            return [
+                'success' => false,
+                'message' => Validator::getErrors()
+            ];
+        }
+
+        if(!Validator::isStudent($userData['class_role'])){
+            return [
+                'success' => false,
+                'message' => Validator::getErrors()
+            ];
+        }
+
+        if(!Validator::validateClassCode($userData['class_code'])){
+            return [
+                'success' => false,
+                'message' => Validator::getErrors()
+            ];
+        }
+
+        $userData = [
+            'username' => Sanitizer::sanitizeUsername($userData['username']),
+            'class_role' => Sanitizer::sanitizeRole($userData['class_role']),
+            'class_code' => Sanitizer::sanitizeClassCode($userData['class_code'])
+        ];
+
+        $result = $this->model->leaveClass($userData);
+
+        if($result){
+            return [
+                'success' => true,
+                'message' => 'You leave the class'
+            ];
+        }
+
+        return [
+            'success' => false,
+            'message' => 'failed to leave'
+        ];
+    }
+
+    /**
+     * Deletes a class by a teacher.
+     *
+     * @param array $userData Contains username, class_role, and class_code.
+     * @return array Result status and message.
+     */
+    public function deleteClass(array $userData): array{
+        Validator::clearErrors();
+
+        if(!Validator::validateUsername($userData['username'])){
+            return [
+                'success' => false,
+                'message' => Validator::getErrors()
+            ];
+        }
+
+        if(!Validator::isTeacher($userData['class_role'])){
+            return [
+                'success' => false,
+                'message' => Validator::getErrors()
+            ];
+        }
+
+        if(!Validator::validateClassCode($userData['class_code'])){
+            return [
+                'success' => false,
+                'message' => Validator::getErrors()
+            ];
+        }
+
+        $userData = [
+            'username' => Sanitizer::sanitizeUsername($userData['username']),
+            'class_role' => Sanitizer::sanitizeRole($userData['class_role']),
+            'class_code' => Sanitizer::sanitizeClassCode($userData['class_code'])
+        ];
+
+        $result = $this->model->deleteClass($userData);
+
+        if($result){
+            return [
+                'success' => true,
+                'message' => 'You leave the class'
+            ];
+        }
+
+        return [
+            'success' => false,
+            'message' => 'failed to leave'
+        ];        
+    }
+
+
+    /**
+     * Get submitted activities for a specific user.
+     *
+     * @param string $username The username of the user.
+     *
+     * @return array|false Returns submitted activity data, validation errors, or false if no result is found.
+     */
+    public function getSubmitted($username): array|false{
+        Validator::clearErrors();
+
+        if(!Validator::validateUsername($username)){
+            return [
+                'success' => false,
+                'message' => Validator::getErrors()
+            ];
+        }
+
+        $username = Sanitizer::sanitizeUsername($username);
+
+        $result = $this->model->getSubmitted($username);
+
+        if($result){
+            return [
+                'success' => true,
+                'data' => $result
+            ];
+        }
+
+        return false;
+    }
     
-    public function submitActivity($submissionData){
+    /**
+     * Submit an activity answer with optional uploaded submission files.
+     *
+     * @param array $submissionData The activity submission data.
+     *
+     * @return array Returns the activity submission result message.
+     */
+    public function submitActivity($submissionData): array{
         Validator::clearErrors();
 
         if(!Validator::validateUsername($submissionData['username'])){

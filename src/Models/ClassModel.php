@@ -940,6 +940,88 @@ class ClassModel{
         }
         
     }
+
+    /**
+     * Get all submissions made by a specific user.
+     *
+     * This method retrieves all records from the `submission` table
+     * where the `submitted_by` field matches the account ID of the
+     * given username.
+     *
+     * @param string $username The username of the account whose submissions will be retrieved.
+     *
+     * @return array|false Returns an array of submissions if successful, or false if a database error occurs.
+     */
+    public function getSubmitted(string $username): array|false
+    {
+        try {
+            $sql = "SELECT
+                        p.title,
+                        s.*
+                    FROM submission s
+                    INNER JOIN activity a ON s.activity_id = a.activity_id
+                    INNER JOIN post p ON p.post_id = a.post_id
+                    WHERE s.submitted_by = (SELECT account_id FROM account WHERE username = :username)";
+
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute([
+                'username' => $username
+            ]);
+
+            return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+
+        } catch (\PDOException) {
+            return false;
+        }
+    }
+
+    /**
+     * Removes a user from a class.
+     *
+     * @param array $userData Contains class_code and username.
+     * @return bool True if the user left the class, false otherwise.
+     */
+    public function leaveClass(array $userData): bool{
+        try{
+            $sql = "DELETE FROM class_user 
+                    WHERE class_id = (SELECT class_id FROM class WHERE class_code = :class_code)
+                    AND account_id = (SELECT account_id FROM account WHERE username = :username)";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute([
+                'class_code' => $userData['class_code'],
+                'username' => $userData['username']
+            ]);
+
+            return $stmt->rowCount() > 0;
+        }catch(\PDOException){
+            return false;
+        }
+    }
+
+    /**
+     * Deletes a class created by a user.
+     *
+     * @param array $userData Contains class_code and username.
+     * @return bool True if the class was deleted, false otherwise.
+     */
+    public function deleteClass(array $userData): bool{
+        try{
+            $sql = "DELETE FROM class
+                    WHERE class_code = :class_code
+                    AND created_by = (SELECT account_id FROM account WHERE username = :username)";
+
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute([
+                'class_code' => $userData['class_code'],
+                'username' => $userData['username']
+            ]);
+
+            return $stmt->rowCount() > 0;
+
+        }catch(\PDOException){
+            return false;
+        }
+    }
 }
 
 ?>

@@ -1,13 +1,23 @@
 <?php
+declare(strict_types=1);
+
 namespace App\Helpers;
 
+/**
+ * Handles validation for user, class, post, grade, and form data.
+ *
+ * @author lisayAlex <202401-00307@dwc-legazpi.edu>
+ */
 class Validator{
     private static $errors = [];
 
     /**
-     * Validate the input grade
+     * Validate the input grade.
+     *
+     * @param mixed $grade The grade to validate.
+     * @return bool True if valid, false otherwise.
      */
-    public static function validateGrade($grade) {
+    public static function validateGrade($grade): bool {
         if($grade === '' || $grade === null) {
             self::$errors[] = "Grade is required.";
             return false;
@@ -29,9 +39,12 @@ class Validator{
     }
 
     /**
-     * Validate Post Id
+     * Validate Post Id.
+     *
+     * @param mixed $id The post ID to validate.
+     * @return bool True if valid, false otherwise.
      */
-    public static function validatePostId($id) {
+    public static function validatePostId($id): bool {
 
         if ($id === '' || !ctype_digit($id)) {
             self::$errors[] = "Invalid ID format.";
@@ -49,9 +62,12 @@ class Validator{
     }
 
     /**
-     * validate checkbox can submit
+     * Validate checkbox can submit.
+     *
+     * @param mixed $value The checkbox value to validate.
+     * @return bool True if valid, false otherwise.
      */
-    public static function validateCheckbox($value){
+    public static function validateCheckbox($value): bool{
         if($value !== 1 && $value !== 0 && $value !== '1' && $value !== '0'){
             self::$errors[] = "Invalid checkbox value";
             return false;
@@ -61,9 +77,12 @@ class Validator{
     }    
 
     /**
-     * Validate description
+     * Validate description.
+     *
+     * @param mixed $description The description to validate.
+     * @return bool True if valid, false otherwise.
      */
-    public static function validateDescription($description){
+    public static function validateDescription($description): bool{
         if(strlen($description) > 1000){
             self::$errors[] = "Description too long";
             return false;
@@ -78,9 +97,12 @@ class Validator{
     }
 
     /**
-     * Validate title
+     * Validate title.
+     *
+     * @param mixed $title The title to validate.
+     * @return bool True if valid, false otherwise.
      */
-    public static function validateTitle($title){
+    public static function validateTitle($title): bool{
         if(strlen($title) < 3){
             self::$errors[] = "Title must be at least 3 characters";
             return false;
@@ -100,9 +122,12 @@ class Validator{
     }
 
     /**
-     * Validate post type
+     * Validate post type.
+     *
+     * @param mixed $postType The post type to validate.
+     * @return bool True if valid, false otherwise.
      */
-    public static function validatePostType($postType){
+    public static function validatePostType($postType): bool{
         $allowedTypes = ['post_announcement', 'post_material', 'post_activity'];
 
         if(!in_array($postType, $allowedTypes)){
@@ -114,9 +139,12 @@ class Validator{
     }
 
     /**
-     * Validate class code
+     * Validate class code.
+     *
+     * @param mixed $classCode The class code to validate.
+     * @return bool True if valid, false otherwise.
      */
-    public static function validateClassCode($classCode){
+    public static function validateClassCode($classCode): bool{
         if(empty($classCode)){
             self::$errors[] = 'Class Code is required';
             return false;
@@ -131,9 +159,12 @@ class Validator{
     }
 
     /**
-     * Validate class name
+     * Validate class name.
+     *
+     * @param mixed $classname The class name to validate.
+     * @return bool True if valid, false otherwise.
      */
-    public static function validateClassName($classname){
+    public static function validateClassName($classname): bool{
         if(strlen($classname) < 3 || strlen($classname) > 100){
             self::$errors[] = 'Class name must be 3–100 characters';
             return false;
@@ -148,9 +179,12 @@ class Validator{
     }
 
     /**
-     * validate class section
+     * Validate class section.
+     *
+     * @param mixed $section The section to validate.
+     * @return bool True if valid, false otherwise.
      */
-    public static function validateClassSection($section){
+    public static function validateClassSection($section): bool{
         if (empty($section)) {
             return true;
         }
@@ -169,9 +203,12 @@ class Validator{
     }
 
     /**
-     * validate class room
+     * Validate class room.
+     *
+     * @param mixed $room The room to validate.
+     * @return bool True if valid, false otherwise.
      */
-    public static function validateClassRoom($room){
+    public static function validateClassRoom($room): bool{
         if (empty($room)) {
             return true;
         }
@@ -190,9 +227,12 @@ class Validator{
     }
 
     /**
-     * validate class subject
+     * Validate class subject.
+     *
+     * @param mixed $subject The subject to validate.
+     * @return bool True if valid, false otherwise.
      */
-    public static function validateClassSubject($subject){
+    public static function validateClassSubject($subject): bool{
         if (empty($subject)) {
             return true;
         }
@@ -211,9 +251,12 @@ class Validator{
     }
 
     /**
-     * Validate Submission Id
+     * Validate Submission Id.
+     *
+     * @param mixed $id The ID to validate.
+     * @return bool True if valid, false otherwise.
      */
-    public static function validateId($id)
+    public static function validateId($id): bool
     {
         if (empty($id)) {
             self::$errors[] = "ID is required";
@@ -234,9 +277,13 @@ class Validator{
     }
 
     /**
-     * Validate username
+     * Validate username.
+     *
+     * @param mixed $name The name to validate.
+     * @param mixed $type The type of name.
+     * @return bool True if valid, false otherwise.
      */
-    public static function validateName($name, $type){
+    public static function validateName($name, $type): bool{
         if(empty($name)){
             self::$errors[] = "{$type} name is required";
             return false;
@@ -266,9 +313,12 @@ class Validator{
     }
 
     /**
-     * Validate username
+     * Validate username.
+     *
+     * @param mixed $username The username to validate.
+     * @return bool True if valid, false otherwise.
      */
-    public static function validateUsername($username){
+    public static function validateUsername($username): bool{
         if(empty($username)){
             self::$errors[] = 'Username is required';
             return false;
@@ -303,9 +353,12 @@ class Validator{
     }
 
     /**
-     * Validate sex
+     * Validate sex.
+     *
+     * @param mixed $sex The sex value to validate.
+     * @return bool True if valid, false otherwise.
      */
-    public static function validateSex($sex){
+    public static function validateSex($sex): bool{
         $allowed = ['male', 'female'];
 
         if(!in_array($sex, $allowed, true)){
@@ -315,7 +368,13 @@ class Validator{
         return true;
     }
 
-    public static function validateDueDate($dueDate){
+    /**
+     * Validate due date.
+     *
+     * @param mixed $dueDate The due date to validate.
+     * @return bool True if valid, false otherwise.
+     */
+    public static function validateDueDate($dueDate): bool{
         if (empty($dueDate)) {
             self::$errors[] = 'Due date is required';
             return false;
@@ -339,9 +398,12 @@ class Validator{
     }
 
     /**
-     * Validate email
+     * Validate email.
+     *
+     * @param mixed $birthdate The birthdate to validate.
+     * @return bool True if valid, false otherwise.
      */
-    public static function validateBirthDate($birthdate){
+    public static function validateBirthDate($birthdate): bool{
         $date = \DateTime::createFromFormat('Y-m-d', $birthdate);
 
         if(empty($birthdate)){
@@ -363,9 +425,12 @@ class Validator{
     }
 
     /**
-     * Validate email
+     * Validate email.
+     *
+     * @param mixed $email The email to validate.
+     * @return bool True if valid, false otherwise.
      */
-    public static function validateEmail($email) {
+    public static function validateEmail($email): bool {
         if (empty($email)) {
             self::$errors[] = "Email is required {$email}";
             return false;
@@ -383,11 +448,59 @@ class Validator{
         
         return true;
     }
+
+    /**
+     * Validate Role.
+     *
+     * @param mixed $role The role to validate.
+     * @return bool True if role is student, false otherwise.
+     */
+    public static function isStudent($role): bool {
+        if (empty($role)) {
+            self::$errors[] = "Role is required";
+            return false;
+        }
+
+        $allowedRoles = ['student'];
+
+        if (!in_array($role, $allowedRoles, true)) {
+            self::$errors[] = "Invalid role selected";
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Validate teacher role.
+     *
+     * @param mixed $role The role to validate.
+     * @return bool True if role is teacher, false otherwise.
+     */
+    public static function isTeacher($role): bool {
+        if (empty($role)) {
+            self::$errors[] = "Role is required";
+            return false;
+        }
+
+        $allowedRoles = ['teacher'];
+
+        if (!in_array($role, $allowedRoles, true)) {
+            self::$errors[] = "Invalid role selected";
+            return false;
+        }
+
+        return true;
+    }    
     
     /**
-     * Validate password
+     * Validate password.
+     *
+     * @param mixed $password The password to validate.
+     * @param mixed|null $confirmPassword The confirmation password.
+     * @return bool True if valid, false otherwise.
      */
-    public static function validatePassword($password, $confirmPassword = null) {
+    public static function validatePassword($password, $confirmPassword = null): bool {
         if (empty($password)) {
             self::$errors[] = "Password is required";
             return false;
@@ -427,9 +540,13 @@ class Validator{
     }
 
     /**
-     * Validate required fields
+     * Validate required fields.
+     *
+     * @param array $data The data to validate.
+     * @param array $requiredFields The required field names.
+     * @return bool True if valid, false otherwise.
      */ 
-    public static function validateRequired($data, $requiredFields) {
+    public static function validateRequired($data, $requiredFields): bool {
         $missing = [];
         
         foreach ($requiredFields as $field) {
@@ -447,23 +564,29 @@ class Validator{
     }
 
     /**
-     * Get all validation errors
+     * Get all validation errors.
+     *
+     * @return array List of validation errors.
      */
-    public static function getErrors() {
+    public static function getErrors(): array {
         return self::$errors;
     }
 
     /**
-     * Clear errors
+     * Clear errors.
+     *
+     * @return void
      */
-    public static function clearErrors() {
+    public static function clearErrors(): void {
         self::$errors = [];
     }
 
     /**
-     * Check if there are any errors
+     * Check if there are any errors.
+     *
+     * @return bool True if errors exist, false otherwise.
      */
-    public static function hasErrors() {
+    public static function hasErrors(): bool {
         return !empty(self::$errors);
     }
 

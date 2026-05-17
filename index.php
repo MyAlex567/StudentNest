@@ -149,7 +149,7 @@ if(isset($_POST['logout']) && $_SERVER['REQUEST_METHOD'] === 'POST'){
             <li class="nav-item" id="settings_toggle"><a class="nav-link" href="#"><i class="bi bi-gear me-2"></i> <span class="nav-text">Settings</span></a></li>
         </ul>
     </nav>
-
+    
     <div id="content" class="w-100 flex-grow-1">
         <header class="navbar navbar-light bg-white border-bottom px-4 py-3 mb-4 sticky-top">
             <div class="d-flex align-items-center gap-3">

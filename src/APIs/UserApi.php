@@ -47,6 +47,9 @@ class UserApi{
         
 
         switch($action){
+            case 'get-Submitted':
+                $this->getSubmitted();
+                break;
             case 'get-To-be-graded':
                 $this->getToBeGraded();
                 break;
@@ -202,6 +205,26 @@ class UserApi{
             'success' => true,
             'data' => $result['data']
         ]);
+    }
+
+    private function getSubmitted(){
+        $username = $_SESSION['userData']['username'];
+
+        $result = $this->classController->getSubmitted($username);
+
+        if(!$result['success']){
+            echo json_encode([
+                'success' => false,
+                'message' => 'No Data Found',
+                'error' => $result['message']
+            ]);
+            return;   
+        }
+
+        echo json_encode([
+            'success' => true,
+            'data' => $result['data']
+        ]);        
     }
 
 }

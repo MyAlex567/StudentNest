@@ -164,6 +164,36 @@ try{
     echo $e->getMessage();
 }       
 
+if(isset($_POST['leave_class']) && $_SERVER['REQUEST_METHOD'] === 'POST'){
+    $data = [
+        'username' => $_SESSION['userData']['username'],
+        'class_role' => $classRole,
+        'class_code' => $classCode
+    ];
+
+    $result = $ClassController->leaveClass($data);
+
+    if($result['success']){
+        header('Location: ' . '../../index.php');
+        exit;
+    }
+}
+
+if(isset($_POST['delete_class']) && $_SERVER['REQUEST_METHOD'] === 'POST'){
+    $data = [
+        'username' => $_SESSION['userData']['username'],
+        'class_role' => $classRole,
+        'class_code' => $classCode
+    ];
+
+    $result = $ClassController->deleteClass($data);
+
+    if($result['success']){
+        header('Location: ' . '../../index.php');
+        exit;
+    }
+}
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -396,17 +426,58 @@ try{
 
                             <!-- Right Column: Info (Hidden on Mobile for cleaner stream) -->
                             <div class="col-lg-3 d-none d-lg-block">
-                                <div class="card border-0 shadow-sm p-3 mb-4">
-                                    <h6 class="fw-bold mb-3">Upcoming Tasks</h6>
-                                    <div class="d-flex align-items-start gap-2 mb-2">
-                                        <i class="bi bi-file-earmark-text text-primary"></i>
-                                        <div>
-                                            <p class="small mb-0 fw-bold">ERD Normalization</p>
-                                            <small class="text-muted">Due: Tomorrow, 11:59 PM</small>
-                                        </div>
-                                    </div>
-                                </div>
+                                <?php if($classRole === 'student'): ?>
+                                    <form action="<?php echo $_SERVER['PHP_SELF'] . '?class_code=' . $classCode ?>" method="POST" class="card border-0 shadow-sm p-3 mb-4">
+                                        <h6 class="fw-bold mb-3 text-danger">
+                                            <i class="bi bi-box-arrow-right me-2"></i>
+                                            Leave Class
+                                        </h6>
 
+                                        <p class="small text-muted mb-3">
+                                            You are currently enrolled in this class. If you leave, you will no longer see its posts, assignments, and files.
+                                        </p>
+
+                                        <button 
+                                            type="submit" 
+                                            name="leave_class"
+                                            class="btn btn-outline-danger rounded-pill fw-semibold"
+                                            onclick="return confirm('Are you sure you want to leave this class?');"
+                                        >
+                                            <i class="bi bi-door-open me-2"></i>
+                                            Leave Class
+                                        </button>
+                                    </form>
+                                <?php elseif($classRole === 'teacher'): ?>
+                                    <form action="<?php echo $_SERVER['PHP_SELF'] . '?class_code=' . $classCode ?>" method="POST" class="card border-0 shadow-sm p-3 mb-4">
+                                        <div class="d-flex align-items-start gap-3">
+                                            <div class="bg-danger-subtle text-danger rounded-circle d-flex align-items-center justify-content-center"
+                                                style="width: 45px; height: 45px; min-width: 45px;">
+                                                <i class="bi bi-trash3 fs-5"></i>
+                                            </div>
+
+                                            <div class="flex-grow-1">
+                                                <h6 class="fw-bold mb-1 text-danger">
+                                                    Delete Class
+                                                </h6>
+
+                                                <p class="small text-muted mb-3">
+                                                    This will permanently delete this class, including its students, posts, assignments, and files.
+                                                    This action cannot be undone.
+                                                </p>
+
+                                                <button 
+                                                    type="submit" 
+                                                    name="delete_class"
+                                                    class="btn btn-danger rounded-pill fw-semibold px-4"
+                                                    onclick="return confirm('Delete this class permanently?')"
+                                                >
+                                                    <i class="bi bi-trash3 me-2"></i>
+                                                    Delete Class
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </form>                                    
+                                <?php endif; ?>
                                 <!-- Class Code here -->
                                 <div class="card border-0 shadow-sm p-3 mb-4">
                                     <h6 class="fw-bold mb-3">Class Code</h6>

@@ -1,17 +1,52 @@
 <?php
+declare(strict_types=1);
+
 namespace App\Helpers;
 
+/**
+ * Handles input sanitization for user, class, post, and other form data.
+ *
+ * @author lisayAlex <202401-00307@dwc-legazpi.edu>
+ */
 class Sanitizer{
 
-    public static function sanitizeCheckbox($value){
+    /**
+     * Sanitizes a class role.
+     *
+     * @param mixed $role The role to sanitize.
+     * @return string Sanitized role.
+     */
+    public static function sanitizeRole($role): string {
+        return strtolower(trim($role));
+    }
+
+    /**
+     * Sanitizes checkbox value.
+     *
+     * @param mixed $value The checkbox value.
+     * @return int Returns 1 if checked, otherwise 0.
+     */
+    public static function sanitizeCheckbox($value): int{
         return ($value == 1 || $value === '1') ? 1 : 0;
     }
 
-    public static function sanitizePostId($id) {
+    /**
+     * Sanitizes post ID.
+     *
+     * @param mixed $id The post ID.
+     * @return string Sanitized post ID.
+     */
+    public static function sanitizePostId($id): string {
         return trim((string) $id);
     }
 
-    public static function sanitizeUsername($username){
+    /**
+     * Sanitizes username.
+     *
+     * @param mixed $username The username to sanitize.
+     * @return string Sanitized username.
+     */
+    public static function sanitizeUsername($username): string{
         if ($username === null) return '';
 
         // trim whitespaces
@@ -31,8 +66,11 @@ class Sanitizer{
 
     /**
      * Sanitize email
+     *
+     * @param mixed $email The email to sanitize.
+     * @return string Sanitized email.
      */
-    public static function sanitizeEmail($email){
+    public static function sanitizeEmail($email): string{
         if ($email === null) return '';
 
         $sanitized = trim($email);
@@ -46,8 +84,11 @@ class Sanitizer{
 
     /**
      * Sanitize password (minimal sanitization as passwords should be hashed)
+     *
+     * @param mixed $password The password to sanitize.
+     * @return string Sanitized password.
      */
-    public static function sanitizePassword($password){
+    public static function sanitizePassword($password): string{
         if ($password === null) return '';
         
         // Just trim whitespace, don't modify password content
@@ -56,8 +97,11 @@ class Sanitizer{
 
     /**
      * Generic sanitize for string inputs
+     *
+     * @param mixed $input The string input to sanitize.
+     * @return string Sanitized string.
      */
-    public static function sanitizeString($input){
+    public static function sanitizeString($input): string{
         if ($input === null) return '';
         
         $sanitized = trim($input);
@@ -69,8 +113,12 @@ class Sanitizer{
 
     /**
      * Sanitize array of inputs based on field types
+     *
+     * @param array $data The array data to sanitize.
+     * @param array $fieldtypes The field type rules.
+     * @return array Sanitized array data.
      */
-    public static function sanitizeArray($data, $fieldtypes = []){
+    public static function sanitizeArray($data, $fieldtypes = []): array{
         $sanitized = [];
 
         foreach($data as $field => $value){
@@ -107,23 +155,32 @@ class Sanitizer{
 
     /**
      * Sanitize Class code
+     *
+     * @param mixed $code The class code to sanitize.
+     * @return string Sanitized class code.
      */
-    public static function sanitizeClassCode($code){
+    public static function sanitizeClassCode($code): string{
         return trim(strtoupper($code));
     }
 
     /**
      * Sanitize Grade
+     *
+     * @param mixed $grade The grade to sanitize.
+     * @return float Sanitized grade.
      */
-    public static function sanitizeGrade($grade) {
+    public static function sanitizeGrade($grade): float {
         $grade = trim($grade);
         return (float) $grade;
     }
 
     /**
      * Sanitize Id
+     *
+     * @param mixed $id The ID to sanitize.
+     * @return int Sanitized ID.
      */
-    public static function sanitizeId($id)
+    public static function sanitizeId($id): int
     {
         return (int) $id;
     }    

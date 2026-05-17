@@ -1,6 +1,7 @@
 import { loadSettings } from "./Home_javaScriptFiles/loadSettings.js";
 import { loadClass } from "./Home_javaScriptFiles/loadClass.js";
 import { loadTobeGraded } from "./Home_javaScriptFiles/loadTobeGraded.js";
+import { loadSubmitted } from "./Home_javaScriptFiles/loadSubmitted.js";
 
 document.addEventListener("DOMContentLoaded", function() {
 
@@ -29,6 +30,7 @@ document.addEventListener("DOMContentLoaded", function() {
     const settings_function = document.getElementById('settings_toggle');
     const class_toggle = document.getElementById("class_toggle");
     const to_be_graded = document.getElementById('to_be_graded_toggle');
+    const check_submitted_toggle = document.getElementById('check_submitted_toggle');
 
     // function to be execute if the user click the settings tab
     settings_function.addEventListener('click', function(){
@@ -73,8 +75,6 @@ document.addEventListener("DOMContentLoaded", function() {
         
     });
 
-
-
     // funtion to be execute if the user click the to be graded tab
     to_be_graded.addEventListener('click', function(){
         const main_user_content = document.getElementById('Main_user_content');
@@ -90,6 +90,24 @@ document.addEventListener("DOMContentLoaded", function() {
         // called the function from the loadSettings Js
         intervalID = setInterval(()=>{
             loadTobeGraded();
+            clearInterval(intervalID);
+        }, 500);
+    });
+
+    check_submitted_toggle.addEventListener('click', function(){
+        const main_user_content = document.getElementById('Main_user_content');
+        // set the main content to default first
+        main_user_content.innerHTML = `
+                            <div class="text-center py-4">
+                                <div class="spinner-border spinner-border-sm me-2" role="status"></div>
+                                <span class="fw-semibold text-muted">Loading, please wait...</span>
+                            </div>
+                        `;
+        let intervalID;
+
+        // called the function from the loadSettings Js
+        intervalID = setInterval(()=>{
+            loadSubmitted();
             clearInterval(intervalID);
         }, 500);
     });
