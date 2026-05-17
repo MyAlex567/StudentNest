@@ -41,7 +41,7 @@ if(isset($_POST['Login']) && $_SERVER['REQUEST_METHOD'] == "POST"){
 
 
 if(isset($_SESSION['errors'])){
-    $message = $_SESSION['errors'];
+    $message = implode(', ', $_SESSION['errors']);
     $messageType = 'error';
     unset($_SESSION['errors']);
 }
@@ -68,7 +68,7 @@ if(isset($_SESSION['errors'])){
         <h3 class="login_title">LOG IN</h3>
         <?php if ($message): ?>
             <div class="message <?php echo $messageType; ?>">
-                <?php var_dump($message) ?>
+                <?php echo $message ?>
             </div>
         <?php endif; ?>
         <h1>Hi! Welcome back to StudentNest 👋</h1>

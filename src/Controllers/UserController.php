@@ -1,20 +1,163 @@
 <?php
+declare(strict_types=1);
+
 namespace App\Controllers;
 
 use App\Helpers\Sanitizer;
 use App\Helpers\Validator;
+use App\Helpers\FileStorageHelper;
+use App\Models\UserModel;
 
+/**
+ * Handles user registration, user information retrieval, and user validation.
+ *
+ * @author lisayAlex <202401-00307@dwc-legazpi.edu>
+ */
 class UserController{
     private $user;
 
-    public function __construct($user){
+    /**
+     * File storage helper instance used for storing and deleting uploaded files.
+     *
+     * @var FileStorageHelper
+     */
+    private $storage;    
+
+    /**
+     * Creates a UserController instance.
+     *
+     * @param mixed $user The user model instance.
+     */
+    public function __construct(UserModel $user){
         $this->user = $user;
+        $this->storage = new FileStorageHelper();
+    }
+
+    public function deleteAccount(string $username){
+        Validator::clearErrors();
+
+        if(!Validator::validateUsername($username)){
+            return [
+                'success' => false,
+                'message' => Validator::getErrors()
+            ];
+        }
+        $username = Sanitizer::sanitizeUsername($username);
+
+        $this->storage->deleteUserFolder($username);
+
+        $removeAccount = $this->user->deleteAccount($username);
+
+        if($removeAccount){
+            return [
+                'success' => true
+            ];
+        }
+
+        return [
+            'success' => false
+        ];
     }
 
     /**
-     * Validate and sanitize user input for registration
+     * Updates the user's account and personal information.
+     *
+     * This method validates the submitted user information, sanitizes the input,
+     * and sends the sanitized data to the user model for updating.
+     *
+     * @param array $input The user information to update.
+     *
+     * @return array Returns an array containing the update status, message,
+     *               and the new username when the update is successful.
      */
-    public function validateAndProcessRegistration($input){
+    public function updateUserInfo(array $input): array{
+        Validator::clearErrors();
+
+        // defined field types for sanitization
+        $fieldtypes = [
+            'username' => 'username',
+            'old_username' => 'old_username',
+            'first_name' => 'first_name',
+            'last_name' => 'last_name',
+            'email' => 'email',
+            'sex' => 'sex',
+            'birthdate' => 'birthdate'
+        ];
+
+        // Validate username
+        if(!Validator::validateUsername($input['username'])){
+            return [
+                'success' => false,
+                'message' => Validator::getErrors()
+            ];
+        }
+
+        if(!Validator::validateUsername($input['old_username'])){
+            return [
+                'success' => false,
+                'message' => Validator::getErrors()
+            ];
+        }
+
+        // Validate first and last name
+        if(!Validator::validateName($input['first_name'], 'first') || !Validator::validateName($input['last_name'], 'last')){
+            return [
+                'success' => false,
+                'message' => Validator::getErrors()
+            ];
+        }        
+
+        // Validate email
+        if (!Validator::validateEmail($input['email'])) {
+            return [
+                'success' => false,
+                'errors' => Validator::getErrors()
+            ];
+        }        
+
+        // Validate sex
+        if (!Validator::validateSex($input['sex'])) {
+            return [
+                'success' => false,
+                'errors' => Validator::getErrors()
+            ];
+        }
+
+        // Validate birthdate
+        if (!Validator::validateBirthDate($input['birthdate'])) {
+            return [
+                'success' => false,
+                'errors' => Validator::getErrors()
+            ];
+        }
+
+        $sanitized = Sanitizer::sanitizeArray($input, $fieldtypes);
+
+        $result = $this->user->updateAccount($sanitized);
+
+        if($result){
+            return [
+                'success' => true,
+                'message' => 'Update info success',
+                'newUsername' => $sanitized['username']
+            ];
+        }
+
+        return [
+            'success' => false,
+            'message' => 'Failed to change'
+        ];
+    }
+
+    
+
+    /**
+     * Validate and sanitize user input for registration.
+     *
+     * @param array $input The registration input data.
+     * @return array Registration result status and data or errors.
+     */
+    public function validateAndProcessRegistration($input): array{
         Validator::clearErrors();
 
         // defined field types for sanitization
@@ -62,7 +205,7 @@ class UserController{
         if (!Validator::validateEmail($sanitized['email'])) {
             return [
                 'success' => false,
-                'errors' => Validator::getErrors()
+                'message' => Validator::getErrors()
             ];
         }
 
@@ -70,7 +213,7 @@ class UserController{
         if (!Validator::validateSex($sanitized['sex'])) {
             return [
                 'success' => false,
-                'errors' => Validator::getErrors()
+                'message' => Validator::getErrors()
             ];
         }
 
@@ -78,7 +221,7 @@ class UserController{
         if (!Validator::validateBirthDate($sanitized['birthdate'])) {
             return [
                 'success' => false,
-                'errors' => Validator::getErrors()
+                'message' => Validator::getErrors()
             ];
         }
 
@@ -86,7 +229,7 @@ class UserController{
         if (!Validator::validatePassword($sanitized['sign_up_password'], $sanitized['confirm_password'])) {
             return [
                 'success' => false,
-                'errors' => Validator::getErrors()
+                'message' => Validator::getErrors()
             ];
         }
 
@@ -94,7 +237,7 @@ class UserController{
         if (!$this->user->check_username_availability($sanitized['sign_up_username'])) {
             return [
                 'success' => false,
-                'errors' => ['Username is already taken']
+                'message' => ['Username is already taken']
             ];
         }
 
@@ -118,12 +261,18 @@ class UserController{
         } else {
             return [
                 'success' => false,
-                'errors' => ['Failed to create user. Please try again.']
+                'message' => ['Failed to create user. Please try again.']
             ];
         }
     }
 
-    public function getUserInfo($username){
+    /**
+     * Gets user information by username.
+     *
+     * @param mixed $username The username to search for.
+     * @return array User query result and user data or error message.
+     */
+    public function getUserInfo($username): array{
         if($username === null){
             return [
                 'query_result' => false,
@@ -147,10 +296,13 @@ class UserController{
     }
 
     /**
-     * Validate email only (for API)
+     * Validate email only (for API).
+     *
+     * @param mixed $email The email to validate.
+     * @return array Email validation result.
      */
 
-    public static function validateEmailOnly($email){
+    public static function validateEmailOnly($email): array{
         Validator::clearErrors();
 
         // Sanitize email
@@ -172,9 +324,12 @@ class UserController{
     }
 
     /**
-     * Validate username only (for API)
+     * Validate username only (for API).
+     *
+     * @param mixed $username The username to validate.
+     * @return array Username validation result.
      */
-    public static function validateUsernameOnly($username) {
+    public static function validateUsernameOnly($username): array {
         Validator::clearErrors();
         
         // Sanitize username

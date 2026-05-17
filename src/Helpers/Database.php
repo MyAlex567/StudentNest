@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 namespace App\Helpers;
 
 require_once __DIR__ . '../../../vendor/autoload.php';
@@ -9,13 +11,22 @@ $env = new EnvParser();
 $env->load(__DIR__ . '../../../env');
 
 
+/**
+ * Handles the database connection using the singleton pattern.
+ *
+ * @author lisayAlex <202401-00307@dwc-legazpi.edu>
+ */
 class Database{
     private static ?Database $instance = null;
     private ?\PDO $pdo = null;
 
     private $config;
 
-    // Private constructor (prevents direct instantiation)
+    /**
+     * Private constructor to prevent direct instantiation.
+     *
+     * @return void
+     */
     private function __construct()
     {
         $this->loadConfig();
@@ -23,9 +34,11 @@ class Database{
     }
     
     /**
-     * Load database configuration from environment
+     * Load database configuration from environment.
+     *
+     * @return void
      */
-    private function loadConfig()
+    private function loadConfig(): void
     {
         $this->config = [
             'host' => getenv('DB_HOST') ?: 'localhost',
@@ -45,9 +58,11 @@ class Database{
     }
     
     /**
-     * Establish database connection
+     * Establish database connection.
+     *
+     * @return void
      */
-    private function connect()
+    private function connect(): void
     {
         try {
             $dsn = sprintf(
@@ -75,15 +90,28 @@ class Database{
         }
     }
 
-    // Clone prevention
-    private function __clone(){}
+    /**
+     * Prevent cloning of the singleton instance.
+     *
+     * @return void
+     */
+    private function __clone(): void{}
     
-    // Wakeup prevention (for unserialization)
-    public function __wakeup(){
+    /**
+     * Prevent unserialization of the singleton instance.
+     *
+     * @return void
+     */
+    public function __wakeup(): void{
         throw new \RuntimeException("Cannot unserialize singleton");
     }
 
-    public static function getInstance(){
+    /**
+     * Get the single Database instance.
+     *
+     * @return Database The database instance.
+     */
+    public static function getInstance(): Database{
         if(self::$instance == null){
             self::$instance = new self();
         }
@@ -91,6 +119,11 @@ class Database{
         return self::$instance;
     }
 
+    /**
+     * Get the PDO database connection.
+     *
+     * @return \PDO The PDO connection.
+     */
     public function getConnection(): \PDO{
         return $this->pdo;
     }

@@ -130,6 +130,9 @@ class Sanitizer{
                     case 'username':
                         $sanitized[$field] = self::sanitizeUsername($value);
                         break;
+                    case 'old_username':
+                        $sanitized[$field] = self::sanitizeUsername($value);
+                        break;                        
                     case 'email':
                         $sanitized[$field] = self::sanitizeEmail($value);
                         break;

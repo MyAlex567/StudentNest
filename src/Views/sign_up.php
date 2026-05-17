@@ -35,7 +35,7 @@ if(isset($_POST['sign_up']) && $_SERVER['REQUEST_METHOD'] == "POST"){
         $_SESSION['success'] = "User registered successfully!";
         $_SESSION['user_data'] = $result['data'];
     } else {
-        $_SESSION['error'] = implode('<br>', $result['errors']);
+        $_SESSION['error'] = implode('<br>', $result['message']);
     }
     
     header('Location: ' . $_SERVER['PHP_SELF']);
@@ -116,7 +116,7 @@ if (isset($_SESSION['success'])) {
                 <div class="Next_button_container">
                     <label for="toggle_parts">Next<i class="fa-solid fa-arrow-right"></i></label>
                 </div>
-                <a href="javascript:history.back()">Log in</a>
+                <a href="./login.php">Log in</a>
             </div>
 
             <div class="second_part">
@@ -148,7 +148,7 @@ if (isset($_SESSION['success'])) {
                 </div>
 
                 <div class="go_back-container">
-                    <label for="go_back_toggle">Back</label>
+                    <button for="go_back_toggle" type="reset">Back</button>
                 </div>
 
                 <div class="sign_up_button_container">

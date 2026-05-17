@@ -17,7 +17,7 @@ export function loadSubmitted(){
         
         if(data.success){
             data.data.forEach(submitted => {
-                console.log(submitted.title);
+                console.log(submitted);
                 submittedTxt += `
                     <div class="col-12">
                         <div class="card border-0 shadow-sm rounded-4">
@@ -77,9 +77,9 @@ export function loadSubmitted(){
 
     }).catch(() => {
         main_user_content.innerHTML = `
-            <div class="message_error">
+            <div class="bg-success-subtle text-success p-3 rounded">
                 <h3 style="text-align:center">
-                    Network error. Try again.
+                    Ops
                 </h3>
             </div>
         `;

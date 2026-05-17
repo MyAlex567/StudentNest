@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 namespace App\APIs;
 session_start();
 
@@ -10,12 +12,29 @@ use App\Models\ClassModel;
 use App\Controllers\ClassController;
 use App\Controllers\UserController;
 
+/**
+ * Handles user-related API requests.
+ *
+ * This API class processes JSON requests for user information, class data,
+ * username/email availability checking, post deletion, submitted activities,
+ * and activities that need grading.
+ *
+ * @package App\APIs
+ */
 class UserApi{
     private $usermodel;
     private $classModel;
     private $userController;
     private $classController;
 
+    /**
+     * Creates a UserApi instance.
+     *
+     * This constructor initializes the database instance, user model,
+     * class model, user controller, and class controller.
+     *
+     * @return void
+     */
     public function __construct(){
         $database = Database::getInstance();
         $this->usermodel = new UserModel($database);
@@ -24,7 +43,15 @@ class UserApi{
         $this->classController = new ClassController($this->classModel);
     }
 
-    public function handleRequest(){
+    /**
+     * Handles incoming API requests.
+     *
+     * This method sets the JSON response headers, validates the request method,
+     * reads the request action, and routes the request to the correct private method.
+     *
+     * @return void
+     */
+    public function handleRequest(): void{
         header('Content-Type: application/json');
         header('Access-Control-Allow-Origin: *');
         header('Access-Control-Allow-Methods: POST, OPTIONS');
@@ -74,7 +101,12 @@ class UserApi{
         }
     }
 
-    private function getUserClass(){
+    /**
+     * Gets the classes of the currently logged-in user.
+     *
+     * @return void
+     */
+    private function getUserClass(): void{
         $userClasses = $this->classController->getUserClasses($_SESSION['userData']['username']);
 
         echo json_encode([
@@ -83,7 +115,12 @@ class UserApi{
         ]);
     }
 
-    private function getUserInfo(){
+    /**
+     * Gets the information of the currently logged-in user.
+     *
+     * @return void
+     */
+    private function getUserInfo(): void{
 
         if(empty($_SESSION['userData'])){
             echo json_encode([
@@ -112,7 +149,12 @@ class UserApi{
         ]);
     }
 
-    private function check_username_availability(){
+    /**
+     * Checks if a username is valid and available.
+     *
+     * @return void
+     */
+    private function check_username_availability(): void{
         $input = json_decode(file_get_contents('php://input'), true); 
         $username = $input['username'] ?? '';
 
@@ -140,7 +182,12 @@ class UserApi{
 
     }
 
-    private function check_email_availability(){
+    /**
+     * Checks if an email is valid and available.
+     *
+     * @return void
+     */
+    private function check_email_availability(): void{
         $input = json_decode(file_get_contents('php://input'), true); 
         $email = $input['email'] ?? '';
 
@@ -166,7 +213,12 @@ class UserApi{
 
     }
     
-    private function deletePost(){
+    /**
+     * Deletes a class post based on the provided post ID.
+     *
+     * @return void
+     */
+    private function deletePost(): void{
         $input = json_decode(file_get_contents('php://input'), true); 
         $post_id = $input['postId'] ?? '';
 
@@ -187,7 +239,12 @@ class UserApi{
         ]);
     }
 
-    private function getToBeGraded(){
+    /**
+     * Gets activities that need to be graded for the current user.
+     *
+     * @return void
+     */
+    private function getToBeGraded(): void{
         $username = $_SESSION['userData']['username'];
 
         $result = $this->classController->getTobeGraded($username);
@@ -207,7 +264,12 @@ class UserApi{
         ]);
     }
 
-    private function getSubmitted(){
+    /**
+     * Gets submitted activities for the current user.
+     *
+     * @return void
+     */
+    private function getSubmitted(): void{
         $username = $_SESSION['userData']['username'];
 
         $result = $this->classController->getSubmitted($username);

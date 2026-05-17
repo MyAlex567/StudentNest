@@ -290,7 +290,7 @@ class Validator{
         }
 
         if (strlen($name) > 50) {
-            self::$errors[] = "{$type} cannot exceed 50 characters";
+            self::$errors[] = "{$type} name cannot exceed 50 characters";
             return false;
         }
 

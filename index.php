@@ -10,11 +10,13 @@ use App\Models\ClassModel;
 use App\Helpers\Database;
 use App\Controllers\AuthController;
 use App\Controllers\ClassController;
+use App\Controllers\UserController;
 
 $database = Database::getInstance();
 $usermodel = new UserModel($database);
 $classModel = new ClassModel($database);
 $AuthController = new AuthController($usermodel);
+$UserController = new UserController($usermodel);
 $ClassController = new ClassController($classModel);
 
 $userData = $_SESSION['userData'] ?? '';
@@ -117,6 +119,54 @@ if(isset($_POST['logout']) && $_SERVER['REQUEST_METHOD'] === 'POST'){
     exit();
 }
 
+if(isset($_POST['update_account']) && $_SERVER['REQUEST_METHOD'] === 'POST'){
+    $account_data = [
+        'first_name' => $_POST['first_name'] ?? '',
+        'last_name' => $_POST['last_name'] ?? '',
+        'username' => $_POST['username'] ?? '',
+        'old_username' => $_SESSION['userData']['username'],
+        'email' => $_POST['email'] ?? '',
+        'sex' => $_POST['sex'] ?? '',
+        'birthdate' => $_POST['birthdate'] ?? ''
+    ];
+
+    $result = $UserController->updateUserInfo($account_data);
+
+    if($result['success']){
+        $_SESSION['toast'] = [
+            'type' => 'success',
+            'message' => $result['message']
+        ];
+        $_SESSION['userData']['username'] = $result['newUsername'];
+    }else{
+        $_SESSION['toast'] = [
+            'type' => 'error',
+            'message' => $result['message']
+        ];
+    }
+
+    header('Location: ' . $_SERVER['PHP_SELF']);
+    exit();
+}
+
+if(isset($_POST['delete_account']) && $_SERVER['REQUEST_METHOD']){
+    $username = $_SESSION['userData']['username'];
+
+    $result = $UserController->deleteAccount($username);
+
+    if($result['success']){
+        header('Location: ' . "./src/Views/login.php");
+        exit;
+    }else{
+        $_SESSION['toast'] = [
+            'type' => 'error',
+            'message' => $result['message']
+        ];        
+    }
+    
+}
+
+
 
 ?>
 
@@ -128,7 +178,7 @@ if(isset($_POST['logout']) && $_SERVER['REQUEST_METHOD'] === 'POST'){
     <title>StudentNest</title>
     <link rel="stylesheet" href="./Assets/Vendor/css/bootstrap.min.css">
     <!-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"> -->
-     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <link rel="stylesheet" href="./Assets/CssDesign/newHome.css">
 </head>
@@ -347,7 +397,6 @@ if(isset($_POST['logout']) && $_SERVER['REQUEST_METHOD'] === 'POST'){
             <div class="card border mb-5 p-3" id="Main_user_content">
 
                 <!-- CONTENT HERE -->
-                 
 
             </div>
         </div>

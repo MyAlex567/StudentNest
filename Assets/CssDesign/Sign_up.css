@@ -82,7 +82,7 @@ body{
     font-weight: bold;
 }
 
-.Next_button_container, .go_back-container{
+.Next_button_container, .go_back-container button{
     width: 100%;
     margin-top: 20px;
     display: flex;
@@ -100,7 +100,7 @@ body{
     cursor: pointer;
 }
 
-.go_back-container label{
+.go_back-container button{
     width: 100%;
     text-align: center;
     font-size: 1.2rem;

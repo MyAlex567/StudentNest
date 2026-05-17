@@ -1,16 +1,40 @@
 <?php
+declare(strict_types=1);
+
 namespace App\Models;
 
+use App\Helpers\Database;
+
+/**
+ * Handles database operations related to user accounts and user profile information.
+ *
+ * This model is responsible for retrieving user information, checking account
+ * availability, inserting new users, selecting all accounts, and updating account details.
+ *
+ * @package App\Models
+ */
 class UserModel{
     private $conn;
 
-    // Store database connection when model is created
-    public function __construct($database){
+    /**
+     * Store database connection when model is created.
+     *
+     * @param Database $database The database helper instance.
+     *
+     * @return void
+     */
+    public function __construct(Database $database){
         $this->conn = $database->getConnection();
     }
 
-    // Get full user info based on username
-    public function getUserinfo($username){
+    /**
+     * Gets full user information based on username.
+     *
+     * @param mixed $username The username used to find the user.
+     *
+     * @return array|false Returns user information as an associative array if found, otherwise false.
+     */
+    public function getUserinfo($username): array|false{
         $sql = "SELECT u.first_name, u.last_name, u.sex, u.birthdate, a.username, a.email, a.created_at
                 FROM user u
                 JOIN account a ON a.account_id = u.account_id
@@ -21,8 +45,16 @@ class UserModel{
         return $stmt->fetch(\PDO::FETCH_ASSOC);
     }
 
-    // Find a user by username (used for login or checking user existence)
-    public function findUser($username){
+    /**
+     * Finds a user account by username.
+     *
+     * This method is commonly used for login or checking if a user exists.
+     *
+     * @param mixed $username The username to search for.
+     *
+     * @return array|false Returns the account data as an associative array if found, otherwise false.
+     */
+    public function findUser($username): array|false{
         $sql = "SELECT username, password FROM account WHERE username = :username";
         $stmt = $this->conn->prepare($sql);
         $stmt->execute(['username' => $username]);
@@ -31,8 +63,14 @@ class UserModel{
         return $result;
     }
 
-    // Check if email is available (returns true if not found in DB)
-    public function check_Email_Availability($email){
+    /**
+     * Checks if an email address is available.
+     *
+     * @param mixed $email The email address to check.
+     *
+     * @return bool Returns true if the email is not found in the database, otherwise false.
+     */
+    public function check_Email_Availability($email): bool{
         $sql = "SELECT email FROM account WHERE email = :email";
         $stmt = $this->conn->prepare($sql);
         $stmt->execute(["email" => $email]);
@@ -41,8 +79,14 @@ class UserModel{
         return $result === false;
     }
 
-    // Check if username is available (returns true if not found in DB)
-    public function check_username_availability($username){
+    /**
+     * Checks if a username is available.
+     *
+     * @param mixed $username The username to check.
+     *
+     * @return bool Returns true if the username is not found in the database, otherwise false.
+     */
+    public function check_username_availability($username): bool{
         $sql = "SELECT account_id FROM account WHERE username = :username";
         $stmt = $this->conn->prepare($sql);
         $stmt->execute(['username' => $username]);
@@ -51,8 +95,12 @@ class UserModel{
         return $result === false;
     }
 
-    // Get all accounts ordered by latest first
-    public function selectAll(){
+    /**
+     * Gets all accounts ordered by latest first.
+     *
+     * @return array Returns an array containing all account records.
+     */
+    public function selectAll(): array{
         $sql = "SELECT * FROM account ORDER BY id DESC";
         $result = $this->conn->query($sql);
         $users = [];
@@ -66,8 +114,17 @@ class UserModel{
         return $users;
     }
 
-    // Insert new account and related user profile (transactional)
-    public function insert($data){
+    /**
+     * Inserts a new account and related user profile information.
+     *
+     * This method uses a transaction to make sure both the account and user
+     * profile records are inserted successfully.
+     *
+     * @param mixed $data The user registration data.
+     *
+     * @return string|false Returns the last inserted account ID if successful, otherwise false.
+     */
+    public function insert($data): string|false{
 
         try{
             // Start transaction to ensure both inserts succeed or fail together
@@ -110,6 +167,70 @@ class UserModel{
             return false;
         }
 
+    }
+
+    /**
+     * Updates account and user profile information.
+     *
+     * This method updates the account table and user table using the old username
+     * to find the existing account record.
+     *
+     * @param array $userInfo The updated user account and profile information.
+     *
+     * @return bool Returns true if at least one row was updated, otherwise false.
+     */
+    public function updateAccount(array $userInfo): bool{
+        try{
+            $sql = "UPDATE account a
+                    INNER JOIN user u ON a.account_id = u.account_id
+                    SET
+                        a.username = :username,
+                        a.email = :email,
+                        u.first_name = :first_name,
+                        u.last_name = :last_name,
+                        u.sex = :sex,
+                        u.birthdate = :birthdate
+                    WHERE a.username = :old_username";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute([
+                'username' => $userInfo['username'],
+                'email' => $userInfo['email'],
+                'first_name' => $userInfo['first_name'],
+                'last_name' => $userInfo['last_name'],
+                'sex' => $userInfo['sex'],
+                'birthdate' => $userInfo['birthdate'],
+                'old_username' => $userInfo['old_username']
+            ]);
+
+            return $stmt->rowCount() > 0;
+
+        }catch(\PDOException $error){
+            return false;
+        }
+    }    
+
+    /**
+     * Deletes an account based on the given username.
+     *
+     * This method removes the account record from the database using the provided
+     * username. It returns true when at least one row was deleted, otherwise false.
+     *
+     * @param string $username The username of the account to delete.
+     *
+     * @return bool Returns true if the account was deleted successfully, otherwise false.
+     */
+    public function deleteAccount(string $username): bool{
+        try{
+            $sql = "DELETE FROM account WHERE username = :username";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute([
+                'username' => $username
+            ]);
+
+            return $stmt->rowCount() > 0; 
+        }catch(\PDOException){
+            return false;
+        }
     }
 
 
