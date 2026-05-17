@@ -31,7 +31,7 @@ if(isset($_POST['Login']) && $_SERVER['REQUEST_METHOD'] == "POST"){
         header('Location: ' . '../../index.php');
         exit;
     }else{
-        $_SESSION['errors'] = $result['errors'];
+        $_SESSION['errors'] = implode(', ', $result['errors']);
         header('Location: ' . $_SERVER['PHP_SELF']);
         exit;
     }
@@ -41,7 +41,7 @@ if(isset($_POST['Login']) && $_SERVER['REQUEST_METHOD'] == "POST"){
 
 
 if(isset($_SESSION['errors'])){
-    $message = implode(', ', $_SESSION['errors']);
+    $message = $_SESSION['errors'];
     $messageType = 'error';
     unset($_SESSION['errors']);
 }

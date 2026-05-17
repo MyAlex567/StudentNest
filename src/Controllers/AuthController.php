@@ -74,18 +74,15 @@ class AuthController{
 
         $account = $this->model->findUser($sanitizedData['username']);
 
-
-
-
         if(!$account){
             return [
                 'success' => false,
-                'errors' => 'Error: user not found'
+                'errors' => ['Error: user not found']
             ];
         }elseif(!password_verify($sanitizedData['password'], $account['password'])){
             return [
                 'success' => false,
-                'errors' => 'Error: Wrong Password'
+                'errors' => ['Error: Wrong Password']
             ];
         }else{
             unset($account['password']);

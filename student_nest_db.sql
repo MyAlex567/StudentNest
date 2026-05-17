@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: May 14, 2026 at 02:26 PM
+-- Generation Time: May 17, 2026 at 12:26 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -27,9 +27,6 @@ SET time_zone = "+00:00";
 -- Table structure for table `account`
 --
 
-CREATE Database student_nest_db;
-use student_nest_db;
-
 CREATE TABLE `account` (
   `account_id` int(11) NOT NULL,
   `username` varchar(255) NOT NULL,
@@ -43,9 +40,8 @@ CREATE TABLE `account` (
 --
 
 INSERT INTO `account` (`account_id`, `username`, `email`, `password`, `created_at`) VALUES
-(1, 'dexter', 'alexlisay509@gmail.com', '$2y$10$qtUJQYQb5IuSuFvWQC1yqOaNBx6iT9x1yk14oRKnw8.0H3YYHaNdy', '2026-05-07 13:46:20'),
-(2, 'Charlo', 'fakes@gmail.com', '$2y$10$NsJFQIqyxAVq0yWtEl8BBOzizLrn5bDVtUM1DUyvvyMNfmPU0Fspe', '2026-05-09 04:48:25'),
-(3, 'sean', 'Ocharan@gmail.com', '$2y$10$lsjKXPSaDtM7nivG72xW1ub2nhjGrY6mdqqTPUmqcltAtvGaG6wTK', '2026-05-11 06:18:53');
+(1, 'lisay', 'alexlisay509@gmail.com', '$2y$10$qtUJQYQb5IuSuFvWQC1yqOaNBx6iT9x1yk14oRKnw8.0H3YYHaNdy', '2026-05-07 13:46:20'),
+(6, 'Charlo', 'charlo@gmail.com', '$2y$10$XOhuynxPWrTc0QtS3v2SPe4tqGrHNIL6ypUsscW5Av5PkY8tp.vkq', '2026-05-17 10:18:47');
 
 -- --------------------------------------------------------
 
@@ -56,8 +52,17 @@ INSERT INTO `account` (`account_id`, `username`, `email`, `password`, `created_a
 CREATE TABLE `activity` (
   `activity_id` int(11) NOT NULL,
   `post_id` int(11) NOT NULL,
-  `due_date` datetime DEFAULT NULL
+  `due_date` datetime DEFAULT NULL,
+  `can_submit` tinyint(1) NOT NULL DEFAULT 1
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `activity`
+--
+
+INSERT INTO `activity` (`activity_id`, `post_id`, `due_date`, `can_submit`) VALUES
+(3, 50, '2026-05-22 06:48:00', 1),
+(7, 55, '2026-05-23 08:03:00', 1);
 
 -- --------------------------------------------------------
 
@@ -69,6 +74,14 @@ CREATE TABLE `announcement` (
   `announcement_id` int(11) NOT NULL,
   `post_id` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `announcement`
+--
+
+INSERT INTO `announcement` (`announcement_id`, `post_id`) VALUES
+(3, 66),
+(4, 67);
 
 -- --------------------------------------------------------
 
@@ -88,7 +101,9 @@ CREATE TABLE `attachment` (
 --
 
 INSERT INTO `attachment` (`attachment_id`, `post_id`, `file_path`, `file_name`) VALUES
-(57, 36, '../../Assets/documents/dexter/post_material/1778755329_7211_WallNami2.jpg', 'WallNami2.jpg');
+(86, 50, '../../Assets/documents/dexter/post_activity/1778885357_8650_Financial-Planning.docx', 'Financial-Planning.docx'),
+(90, 67, '../../Assets/documents/lisay/post_announcement/1778973183_8053_Research_paper_AdanteDexisneLisayPlandano1.docx', 'Research_paper_AdanteDexisneLisayPlandano (1).docx'),
+(91, 67, '../../Assets/documents/lisay/post_announcement/1778973183_3142_5_Minute_Advocacy_Script.docx', '5_Minute_Advocacy_Script.docx');
 
 -- --------------------------------------------------------
 
@@ -113,7 +128,6 @@ CREATE TABLE `class` (
 
 INSERT INTO `class` (`class_id`, `created_by`, `class_name`, `subject`, `room`, `section`, `class_code`, `created_at`) VALUES
 (1, 1, 'Bagong class', '', '', '', '570488', '2026-05-08 09:56:21'),
-(2, 2, 'Bagong class', '', '', '', '6C00F6', '2026-05-13 02:09:09'),
 (3, 1, 'GE ELEC 11 Gender And Society', '', '', '', '537AD8', '2026-05-13 08:54:26');
 
 -- --------------------------------------------------------
@@ -136,9 +150,6 @@ CREATE TABLE `class_user` (
 
 INSERT INTO `class_user` (`class_user_id`, `class_id`, `account_id`, `role`, `joined_at`) VALUES
 (1, 1, 1, 'teacher', '2026-05-08 09:56:21'),
-(2, 1, 2, 'student', '2026-05-09 04:49:13'),
-(3, 1, 3, 'student', '2026-05-11 06:23:43'),
-(4, 2, 2, 'teacher', '2026-05-13 02:09:09'),
 (5, 3, 1, 'teacher', '2026-05-13 08:54:26');
 
 -- --------------------------------------------------------
@@ -157,7 +168,9 @@ CREATE TABLE `material` (
 --
 
 INSERT INTO `material` (`material_id`, `post_id`) VALUES
-(40, 36);
+(44, 40),
+(51, 51),
+(53, 65);
 
 -- --------------------------------------------------------
 
@@ -169,7 +182,7 @@ CREATE TABLE `post` (
   `post_id` int(11) NOT NULL,
   `class_id` int(11) NOT NULL,
   `created_by` int(11) NOT NULL,
-  `post_type` enum('activity','material') NOT NULL,
+  `post_type` enum('material','announcement','activity') NOT NULL,
   `post_date` timestamp NOT NULL DEFAULT current_timestamp(),
   `title` varchar(255) NOT NULL,
   `description` varchar(255) DEFAULT NULL
@@ -180,7 +193,44 @@ CREATE TABLE `post` (
 --
 
 INSERT INTO `post` (`post_id`, `class_id`, `created_by`, `post_type`, `post_date`, `title`, `description`) VALUES
-(36, 1, 1, 'material', '2026-05-14 10:42:09', 'asd', '');
+(40, 1, 1, 'material', '2026-05-15 05:58:13', 'Test', ''),
+(50, 3, 1, 'activity', '2026-05-15 22:49:17', 'asdasdasd', ''),
+(51, 3, 1, 'material', '2026-05-15 23:41:51', 'Bagong Title', ''),
+(55, 3, 1, 'activity', '2026-05-16 00:03:18', 'Do this shit guys', 'No available Description For this Activity'),
+(65, 3, 1, 'material', '2026-05-16 23:11:18', 'Bagong TitleULIULI', ''),
+(66, 3, 1, 'announcement', '2026-05-16 23:12:16', 'asdasdasd', ''),
+(67, 3, 1, 'announcement', '2026-05-16 23:13:03', 'Lisay new Username', '');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `submission`
+--
+
+CREATE TABLE `submission` (
+  `submission_id` int(11) NOT NULL,
+  `activity_id` int(11) NOT NULL,
+  `submitted_by` int(11) NOT NULL,
+  `graded_by` int(11) DEFAULT NULL,
+  `answer_text` varchar(255) DEFAULT NULL,
+  `grade` decimal(5,2) DEFAULT NULL,
+  `status` enum('submitted','late','graded') DEFAULT NULL,
+  `submitted_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `graded_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `submission_file`
+--
+
+CREATE TABLE `submission_file` (
+  `file_id` int(11) NOT NULL,
+  `submission_id` int(11) NOT NULL,
+  `file_name` varchar(255) DEFAULT NULL,
+  `file_path` varchar(255) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -203,8 +253,7 @@ CREATE TABLE `user` (
 
 INSERT INTO `user` (`user_id`, `account_id`, `first_name`, `last_name`, `sex`, `birthdate`) VALUES
 (1, 1, 'Alex', 'lisay', 'male', '2026-04-30'),
-(2, 2, 'Charlo', 'Marco', 'male', '2026-02-05'),
-(3, 3, 'Sean', 'Ocharan', 'male', '2026-05-01');
+(6, 6, 'Charlo', 'Marco', 'female', '2026-05-05');
 
 --
 -- Indexes for dumped tables
@@ -271,6 +320,22 @@ ALTER TABLE `post`
   ADD KEY `created_fk` (`created_by`);
 
 --
+-- Indexes for table `submission`
+--
+ALTER TABLE `submission`
+  ADD PRIMARY KEY (`submission_id`),
+  ADD KEY `activity_id` (`activity_id`),
+  ADD KEY `submitted_by` (`submitted_by`),
+  ADD KEY `graded_by` (`graded_by`);
+
+--
+-- Indexes for table `submission_file`
+--
+ALTER TABLE `submission_file`
+  ADD PRIMARY KEY (`file_id`),
+  ADD KEY `submission_id` (`submission_id`);
+
+--
 -- Indexes for table `user`
 --
 ALTER TABLE `user`
@@ -285,55 +350,67 @@ ALTER TABLE `user`
 -- AUTO_INCREMENT for table `account`
 --
 ALTER TABLE `account`
-  MODIFY `account_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `account_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT for table `activity`
 --
 ALTER TABLE `activity`
-  MODIFY `activity_id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `activity_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
 
 --
 -- AUTO_INCREMENT for table `announcement`
 --
 ALTER TABLE `announcement`
-  MODIFY `announcement_id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `announcement_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `attachment`
 --
 ALTER TABLE `attachment`
-  MODIFY `attachment_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=58;
+  MODIFY `attachment_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=102;
 
 --
 -- AUTO_INCREMENT for table `class`
 --
 ALTER TABLE `class`
-  MODIFY `class_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `class_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `class_user`
 --
 ALTER TABLE `class_user`
-  MODIFY `class_user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `class_user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
 
 --
 -- AUTO_INCREMENT for table `material`
 --
 ALTER TABLE `material`
-  MODIFY `material_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=41;
+  MODIFY `material_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=57;
 
 --
 -- AUTO_INCREMENT for table `post`
 --
 ALTER TABLE `post`
-  MODIFY `post_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=37;
+  MODIFY `post_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=76;
+
+--
+-- AUTO_INCREMENT for table `submission`
+--
+ALTER TABLE `submission`
+  MODIFY `submission_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
+
+--
+-- AUTO_INCREMENT for table `submission_file`
+--
+ALTER TABLE `submission_file`
+  MODIFY `file_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
 
 --
 -- AUTO_INCREMENT for table `user`
 --
 ALTER TABLE `user`
-  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- Constraints for dumped tables
@@ -361,14 +438,14 @@ ALTER TABLE `attachment`
 -- Constraints for table `class`
 --
 ALTER TABLE `class`
-  ADD CONSTRAINT `class_ibfk_1` FOREIGN KEY (`created_by`) REFERENCES `account` (`account_id`);
+  ADD CONSTRAINT `class_ibfk_1` FOREIGN KEY (`created_by`) REFERENCES `account` (`account_id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Constraints for table `class_user`
 --
 ALTER TABLE `class_user`
-  ADD CONSTRAINT `class_user_ibfk_1` FOREIGN KEY (`class_id`) REFERENCES `class` (`class_id`),
-  ADD CONSTRAINT `class_user_ibfk_2` FOREIGN KEY (`account_id`) REFERENCES `account` (`account_id`);
+  ADD CONSTRAINT `class_user_ibfk_1` FOREIGN KEY (`class_id`) REFERENCES `class` (`class_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `class_user_ibfk_2` FOREIGN KEY (`account_id`) REFERENCES `account` (`account_id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Constraints for table `material`
@@ -384,10 +461,24 @@ ALTER TABLE `post`
   ADD CONSTRAINT `created_fk` FOREIGN KEY (`created_by`) REFERENCES `account` (`account_id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
+-- Constraints for table `submission`
+--
+ALTER TABLE `submission`
+  ADD CONSTRAINT `submission_ibfk_1` FOREIGN KEY (`activity_id`) REFERENCES `activity` (`activity_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `submission_ibfk_2` FOREIGN KEY (`submitted_by`) REFERENCES `account` (`account_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `submission_ibfk_3` FOREIGN KEY (`graded_by`) REFERENCES `account` (`account_id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+--
+-- Constraints for table `submission_file`
+--
+ALTER TABLE `submission_file`
+  ADD CONSTRAINT `submission_file_ibfk_1` FOREIGN KEY (`submission_id`) REFERENCES `submission` (`submission_id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
 -- Constraints for table `user`
 --
 ALTER TABLE `user`
-  ADD CONSTRAINT `user_ibfk_1` FOREIGN KEY (`account_id`) REFERENCES `account` (`account_id`);
+  ADD CONSTRAINT `user_ibfk_1` FOREIGN KEY (`account_id`) REFERENCES `account` (`account_id`) ON DELETE CASCADE ON UPDATE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
